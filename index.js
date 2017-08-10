@@ -29,7 +29,7 @@ module.exports = function multimd_table_plugin(md) {
             backTicked = false,
             lastBackTick = 0;
 
-        ch  = str.charCodeAt(pos);
+        ch = str.charCodeAt(pos);
 
         while (pos < max) {
             if (ch === 0x60/* ` */) {
@@ -136,6 +136,7 @@ module.exports = function multimd_table_plugin(md) {
         // and align row shouldn't be smaller than that (the rest of the rows can)
         columnCount = columns.length;
         if (columnCount > aligns.length) { return false; }
+        if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
 
         if (silent) { return true; }
 
@@ -176,6 +177,7 @@ module.exports = function multimd_table_plugin(md) {
             if (lineText.indexOf('|') === -1) { break; }
             if (state.sCount[nextLine] - state.blkIndent >= 4) { break; }
             columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
+            if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { break; }
 
             token = state.push('tr_open', 'tr', 1);
             for (i = 0; i < columnCount; i++) {
