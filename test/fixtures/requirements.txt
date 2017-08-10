@@ -74,6 +74,36 @@ New section   |      More     |        Data  |</p>
 .
 
 2. The “separator” line between headers and table content must contain only |,-, =, :,., +, or spaces
+NOTE: no implementation detailed about denoting wrappable, use class `export_wrap` here
+.
+First Header  | Second Header | Third Header |
+............  | :==========:+ | -----------: |
+Content       |   **Cell**    |         Cell |
+New section   |     More      |         Data |
+.
+<table>
+<thead>
+<tr>
+<th>First Header</th>
+<th style="text-align:center" class=".export_wrap">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center" class=".export_wrap"><strong>Cell</strong></td>
+<td style="text-align:right">Cell</td>
+</tr>
+<tr>
+<td>New section</td>
+<td style="text-align:center" class=".export_wrap">More</td>
+<td style="text-align:right">Data</td>
+</tr>
+</tbody>
+</table>
+.
+
 3. Cell content must be on one line only
 4. Columns are separated by |
 5. The first line of the table, and the alignment/divider line, must start at the beginning of the line

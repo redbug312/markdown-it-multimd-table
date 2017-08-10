@@ -3,15 +3,6 @@
 'use strict';
 
 module.exports = function multimd_table_plugin(md) {
-    function isSpace(code) {
-        switch (code) {
-            case 0x09:
-            case 0x20:
-                return true;
-        }
-        return false;
-    }
-
     function getLine(state, line) {
         var pos = state.bMarks[line] + state.blkIndent,
             max = state.eMarks[line];
@@ -71,40 +62,21 @@ module.exports = function multimd_table_plugin(md) {
     }
 
     function table(state, startLine, endLine, silent) {
-        var ch, lineText, pos, i, nextLine, columns, columnCount, token, aligns, t, tableLines, tbodyLines;
+        var lineText, i, seperatorLine, nextLine, columns, columnCount, token, aligns, wraps, t, tableLines, tbodyLines;
 
         // should have at least two lines
         if (startLine + 2 > endLine) { return false; }
 
-        nextLine = startLine + 1;
-
-        if (state.sCount[nextLine] < state.blkIndent) { return false; }
-
+        seperatorLine = startLine + 1;
+        if (state.sCount[seperatorLine] < state.blkIndent) { return false; }
+        if (state.sCount[seperatorLine] - state.blkIndent >= 4) { return false; }
         // if it's indented more than 3 spaces, it should be a code block
-        if (state.sCount[nextLine] - state.blkIndent >= 4) { return false; }
 
-        // first character of the second line should be '|', '-', ':',
-        // and no other characters are allowed but spaces;
-        // basically, this is the equivalent of /^[-:|][-:|\s]*$/ regexp
-
-        pos = state.bMarks[nextLine] + state.tShift[nextLine];
-        if (pos >= state.eMarks[nextLine]) { return false; }
-
-        ch = state.src.charCodeAt(pos++);
-        if (ch !== 0x7C/* | */ && ch !== 0x2D/* - */ && ch !== 0x3A/* : */) { return false; }
-
-        while (pos < state.eMarks[nextLine]) {
-            ch = state.src.charCodeAt(pos);
-
-            if (ch !== 0x7C/* | */ && ch !== 0x2D/* - */ && ch !== 0x3A/* : */ && !isSpace(ch)) { return false; }
-
-            pos++;
-        }
-
-        lineText = getLine(state, startLine + 1);
-
+        lineText = getLine(state, seperatorLine);
         columns = lineText.split('|');
+        if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
         aligns = [];
+        wraps = [];
         for (i = 0; i < columns.length; i++) {
             t = columns[i].trim();
             if (!t) {
@@ -117,7 +89,13 @@ module.exports = function multimd_table_plugin(md) {
                 }
             }
 
-            if (!/^:?-+:?$/.test(t)) { return false; }
+            if (!/^:?(-+|=+|\.+):?\+?$/.test(t)) { return false; }
+            if (t.charCodeAt(t.length - 1) === 0x2B/* + */) {
+                wraps.push(true);
+                t = t.slice(0, -1);
+            } else {
+                wraps.push(false);
+            }
             if (t.charCodeAt(t.length - 1) === 0x3A/* : */) {
                 aligns.push(t.charCodeAt(0) === 0x3A/* : */ ? 'center' : 'right');
             } else if (t.charCodeAt(0) === 0x3A/* : */) {
@@ -152,8 +130,12 @@ module.exports = function multimd_table_plugin(md) {
         for (i = 0; i < columns.length; i++) {
             token          = state.push('th_open', 'th', 1);
             token.map      = [ startLine, startLine + 1 ];
+            token.attrs    = [];
             if (aligns[i]) {
-                token.attrs  = [ [ 'style', 'text-align:' + aligns[i] ] ];
+                token.attrs.push([ 'style', 'text-align:' + aligns[i] ]);
+            }
+            if (wraps[i]) {
+                token.attrs.push([ 'class', '.export_wrap' ]);
             }
 
             token          = state.push('inline', '', 0);
@@ -170,7 +152,7 @@ module.exports = function multimd_table_plugin(md) {
         token     = state.push('tbody_open', 'tbody', 1);
         token.map = tbodyLines = [ startLine + 2, 0 ];
 
-        for (nextLine = startLine + 2; nextLine < endLine; nextLine++) {
+        for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
             if (state.sCount[nextLine] < state.blkIndent) { break; }
 
             lineText = getLine(state, nextLine).trim();
@@ -182,8 +164,12 @@ module.exports = function multimd_table_plugin(md) {
             token = state.push('tr_open', 'tr', 1);
             for (i = 0; i < columnCount; i++) {
                 token          = state.push('td_open', 'td', 1);
+                token.attrs    = [];
                 if (aligns[i]) {
-                    token.attrs  = [ [ 'style', 'text-align:' + aligns[i] ] ];
+                    token.attrs.push([ 'style', 'text-align:' + aligns[i] ]);
+                }
+                if (wraps[i]) {
+                    token.attrs.push([ 'class', '.export_wrap' ]);
                 }
 
                 token          = state.push('inline', '', 0);
