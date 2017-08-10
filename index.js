@@ -7,7 +7,7 @@ module.exports = function multimd_table_plugin(md) {
         var pos = state.bMarks[line] + state.blkIndent,
             max = state.eMarks[line];
 
-        return state.src.substr(pos, max - pos);
+        return state.src.slice(pos, max);
     }
 
     function escapedSplit(str) {
@@ -34,7 +34,7 @@ module.exports = function multimd_table_plugin(md) {
                     lastBackTick = pos;
                 }
             } else if (ch === 0x7c/* | */ && (escapes & 1) === 0 && !backTicked) {
-                result.push(str.substring(lastPos, pos));
+                result.push(str.slice(lastPos, pos));
                 lastPos = pos + 1;
             }
 
@@ -56,13 +56,14 @@ module.exports = function multimd_table_plugin(md) {
             ch = str.charCodeAt(pos);
         }
 
-        result.push(str.substring(lastPos));
+        result.push(str.slice(lastPos));
 
         return result;
     }
 
     function table(state, startLine, endLine, silent) {
-        var lineText, i, seperatorLine, nextLine, columns, columnCount, token, aligns, wraps, t, tableLines, tbodyLines;
+        var lineText, i, seperatorLine, nextLine, columns, columnCount, token,
+            aligns, wraps, t, tableLines, tbodyLines;
 
         // should have at least two lines
         if (startLine + 2 > endLine) { return false; }
@@ -96,12 +97,12 @@ module.exports = function multimd_table_plugin(md) {
             } else {
                 wraps.push(false);
             }
-            if (t.charCodeAt(t.length - 1) === 0x3A/* : */) {
-                aligns.push(t.charCodeAt(0) === 0x3A/* : */ ? 'center' : 'right');
-            } else if (t.charCodeAt(0) === 0x3A/* : */) {
-                aligns.push('left');
-            } else {
-                aligns.push('');
+            switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
+                     (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
+                case 0x00: aligns.push('');       break;
+                case 0x01: aligns.push('right');  break;
+                case 0x10: aligns.push('left');   break;
+                case 0x11: aligns.push('center'); break;
             }
         }
 
