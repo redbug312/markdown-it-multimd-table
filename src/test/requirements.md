@@ -1,13 +1,14 @@
 # MultiMarkdown Tables: Requirements
 From [MultiMarkdown](http://fletcher.github.io/MultiMarkdown-4/tables)
 
-Standards:
-.
+## Standards
+```markdown
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
 Content       |   **Cell**    |         Cell |
 New section   |     More      |         Data |
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -29,18 +30,19 @@ New section   |     More      |         Data |
 </tr>
 </tbody>
 </table>
-.
+```
 
-There must be at least one | per line:
-NOTE: Assumed legal pipe chars, could be leading or tailing
+## There must be at least one | per line
+> NOTE: Assumed legal pipe chars, could be leading or tailing
 
 (Against at line 4)
-.
+```markdown
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
 Content      \|   **Cell**   \|         Cell |
 New section  \|     More     `|`        Data\|
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -58,29 +60,31 @@ New section  \|     More     `|`        Data\|
 </tbody>
 </table>
 <p>New section  |     More     <code>|</code>        Data|</p>
-.
+```
 
 (Against at line 1)
-.
+```markdown
 First Header \| Second Header`|`Third Header\|
 ------------  | :-----------: | -----------: |
 Content       |   **Cell**    |         Cell |
 New section   |      More     |        Data  |
-.
+```
+```html
 <p>First Header | Second Header<code>|</code>Third Header|
 ------------  | :-----------: | -----------: |
 Content       |   <strong>Cell</strong>    |         Cell |
 New section   |      More     |        Data  |</p>
-.
+```
 
-The “separator” line between headers and table content must contain only |,-, =, :,., +, or spaces:
-NOTE: no implementation detailed about denoting wrappable, use class `export_wrap` here
-.
+## The “separator” line between headers and table content must contain only |,-, =, :,., +, or spaces
+> NOTE: no implementation detailed about denoting wrappable, use class `export_wrap` here
+```markdown
 First Header  | Second Header | Third Header |
 ............  | :==========:+ | -----------: |
 Content       |   **Cell**    |         Cell |
 New section   |     More      |         Data |
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -102,8 +106,8 @@ New section   |     More      |         Data |
 </tr>
 </tbody>
 </table>
-.
+```
 
-Cell content must be on one line only:
-Columns are separated by |:
-The first line of the table, and the alignment/divider line, must start at the beginning of the line:
+## Cell content must be on one line only
+## Columns are separated by |
+## The first line of the table, and the alignment/divider line, must start at the beginning of the line

@@ -1,13 +1,14 @@
 # Markdown Table Basics
 From [PHP Markdown Extra](https://michelf.ca/projects/php-markdown/extra/)
 
-Simple:
-.
+## Simple
+```markdown
 First Header  | Second Header
 ------------- | -------------
 Content Cell  | Content Cell
 Content Cell  | Content Cell
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -26,15 +27,16 @@ Content Cell  | Content Cell
 </tr>
 </tbody>
 </table>
-.
+```
 
-Leading and Tailing pipes:
-.
+## Leading and Tailing pipes
+```markdown
 | First Header  | Second Header |
 | ------------- | ------------- |
 | Content Cell  | Content Cell  |
 | Content Cell  | Content Cell  |
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -53,16 +55,17 @@ Leading and Tailing pipes:
 </tr>
 </tbody>
 </table>
-.
+```
 
-Alignments:
-.
+## Alignments
+```markdown
 | Item      | Value |
 | :-------: | -----:|
 | Computer  | $1600 |
 | Phone     |   $12 |
 | Pipe      |    $1 |
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -85,15 +88,16 @@ Alignments:
 </tr>
 </tbody>
 </table>
-.
+```
 
-Span-level Formatting:
-.
+## Span-level Formatting
+```markdown
 | Function name | Description                    |
 | ------------- | ------------------------------ |
 | `help()`      | Display the help window.       |
 | `destroy()`   | **Destroy your computer!**     |
-.
+```
+```html
 <table>
 <thead>
 <tr>
@@ -112,4 +116,4 @@ Span-level Formatting:
 </tr>
 </tbody>
 </table>
-.
+```
