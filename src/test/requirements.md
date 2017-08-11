@@ -109,5 +109,38 @@ New section   |     More      |         Data |
 ```
 
 ## Cell content must be on one line only
+
+```markdown
+First Header  | Second Header | Third Header |
+------------  | :-----------: | -----------: |
+Content       |   **Cell**    |         Cell |
+New section   |     1. More
+                    2. MORE!  |         Data |
+```
+```html
+<table>
+<thead>
+<tr>
+<th>First Header</th>
+<th style="text-align:center">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center"><strong>Cell</strong></td>
+<td style="text-align:right">Cell</td>
+</tr>
+<tr>
+<td>New section</td>
+<td style="text-align:center">1. More</td>
+<td style="text-align:right"></td>
+</tr>
+</tbody>
+</table>
+<pre><code>                2. MORE!  |         Data |
+</code></pre>
+```
 ## Columns are separated by |
 ## The first line of the table, and the alignment/divider line, must start at the beginning of the line
