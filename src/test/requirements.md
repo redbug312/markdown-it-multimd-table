@@ -2,6 +2,7 @@
 From [MultiMarkdown](http://fletcher.github.io/MultiMarkdown-4/tables)
 
 ## Standards
+
 ```markdown
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
@@ -33,7 +34,7 @@ New section   |     More      |         Data |
 ```
 
 ## There must be at least one | per line
-> NOTE: Assumed legal pipe chars, could be leading or tailing
+> NOTE: Assumed legal pipe chars, could be leading, tailing or both
 
 (Against at line 4)
 ```markdown
@@ -78,6 +79,7 @@ New section   |      More     |        Data  |</p>
 
 ## The “separator” line between headers and table content must contain only |,-, =, :,., +, or spaces
 > NOTE: no implementation detailed about denoting wrappable, use class `export_wrap` here
+
 ```markdown
 First Header  | Second Header | Third Header |
 ............  | :==========:+ | -----------: |
@@ -142,5 +144,8 @@ New section   |     1. More
 <pre><code>                2. MORE!  |         Data |
 </code></pre>
 ```
+
 ## Columns are separated by |
+> NOTE: Defined in PHP Markdown Extra. Test cases ignored.
+
 ## The first line of the table, and the alignment/divider line, must start at the beginning of the line
