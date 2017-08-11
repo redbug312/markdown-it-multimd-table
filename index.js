@@ -3,6 +3,10 @@
 'use strict';
 
 module.exports = function multimd_table_plugin(md) {
+  function isFilledArray(array) {
+    return typeof array !== 'undefined' && array.length > 0;
+  }
+
   function getLine(state, line) {
     var pos = state.bMarks[line] + state.blkIndent,
       max = state.eMarks[line];
@@ -62,7 +66,7 @@ module.exports = function multimd_table_plugin(md) {
   }
 
   function table(state, startLine, endLine, silent) {
-    var lineText, i, seperatorLine, nextLine, columns, columnCount, token,
+    var lineText, i, headerLine, seperatorLine, nextLine, columns, columnCount, token,
       aligns, wraps, t, tableLines, tbodyLines;
 
     // should have at least two lines
@@ -73,49 +77,60 @@ module.exports = function multimd_table_plugin(md) {
     if (state.sCount[seperatorLine] - state.blkIndent >= 4) { return false; }
     // if it's indented more than 3 spaces, it should be a code block
 
-    lineText = getLine(state, seperatorLine);
-    columns = lineText.split('|');
-    if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
-    aligns = [];
-    wraps = [];
-    for (i = 0; i < columns.length; i++) {
-      t = columns[i].trim();
-      if (!t) {
-        // allow empty columns before and after table, but not in between columns;
-        // e.g. allow ` |---| `, disallow ` ---||--- `
-        if (i === 0 || i === columns.length - 1) {
-          continue;
-        } else {
-          return false;
+    while (!isFilledArray(aligns)) {
+      lineText = getLine(state, seperatorLine);
+      columns = lineText.split('|');
+      if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+      aligns = [];
+      wraps = [];
+      for (i = 0; i < columns.length; i++) {
+        t = columns[i].trim();
+        if (!t) {
+          // allow empty columns before and after table, but not in between columns;
+          // e.g. allow ` |---| `, disallow ` ---||--- `
+          if (i === 0 || i === columns.length - 1) {
+            continue;
+          } else {
+            // might be another header line
+            seperatorLine++;
+            aligns = [];
+            wraps = [];
+            break;
+          }
+        } else if (!/^:?(-+|=+|\.+):?\+?$/.test(t)) {
+          seperatorLine++;
+          aligns = [];
+          wraps = [];
+          break;
         }
-      }
 
-      if (!/^:?(-+|=+|\.+):?\+?$/.test(t)) { return false; }
-      if (t.charCodeAt(t.length - 1) === 0x2B/* + */) {
-        wraps.push(true);
-        t = t.slice(0, -1);
-      } else {
-        wraps.push(false);
-      }
-      switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
-           (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
-        case 0x00: aligns.push('');       break;
-        case 0x01: aligns.push('right');  break;
-        case 0x10: aligns.push('left');   break;
-        case 0x11: aligns.push('center'); break;
+        if (t.charCodeAt(t.length - 1) === 0x2B/* + */) {
+          wraps.push(true);
+          t = t.slice(0, -1);
+        } else {
+          wraps.push(false);
+        }
+        switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
+             (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
+          case 0x00: aligns.push('');       break;
+          case 0x01: aligns.push('right');  break;
+          case 0x10: aligns.push('left');   break;
+          case 0x11: aligns.push('center'); break;
+        }
       }
     }
 
-    lineText = getLine(state, startLine).trim();
-    if (lineText.indexOf('|') === -1) { return false; }
-    if (state.sCount[startLine] - state.blkIndent >= 4) { return false; }
-    columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
+    for (headerLine = startLine; headerLine < seperatorLine; headerLine++) {
+      lineText = getLine(state, headerLine).trim();
+      if (lineText.indexOf('|') === -1) { return false; }
+      if (state.sCount[startLine] - state.blkIndent >= 4) { return false; }
 
-    // header row will define an amount of columns in the entire table,
-    // and align row shouldn't be smaller than that (the rest of the rows can)
-    columnCount = columns.length;
-    if (columnCount > aligns.length) { return false; }
-    if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+      // header row will define an amount of columns in the entire table,
+      // and align row shouldn't be smaller than that (the rest of the rows can)
+      columnCount = escapedSplit(lineText.replace(/^\||\|$/g, '')).length;
+      if (columnCount > aligns.length) { return false; }
+      if (columnCount === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+    }
 
     if (silent) { return true; }
 
@@ -125,29 +140,35 @@ module.exports = function multimd_table_plugin(md) {
     token     = state.push('thead_open', 'thead', 1);
     token.map = [ startLine, startLine + 1 ];
 
-    token     = state.push('tr_open', 'tr', 1);
-    token.map = [ startLine, startLine + 1 ];
+    for (headerLine = startLine; headerLine < seperatorLine; headerLine++) {
+      lineText = getLine(state, headerLine).trim();
+      columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
 
-    for (i = 0; i < columns.length; i++) {
-      token          = state.push('th_open', 'th', 1);
-      token.map      = [ startLine, startLine + 1 ];
-      token.attrs    = [];
-      if (aligns[i]) {
-        token.attrs.push([ 'style', 'text-align:' + aligns[i] ]);
+      token     = state.push('tr_open', 'tr', 1);
+      token.map = [ startLine, startLine + 1 ];
+
+      for (i = 0; i < columns.length; i++) {
+        token          = state.push('th_open', 'th', 1);
+        token.map      = [ startLine, startLine + 1 ];
+        token.attrs    = [];
+        if (aligns[i]) {
+          token.attrs.push([ 'style', 'text-align:' + aligns[i] ]);
+        }
+        if (wraps[i]) {
+          token.attrs.push([ 'class', '.export_wrap' ]);
+        }
+
+        token          = state.push('inline', '', 0);
+        token.content  = columns[i].trim();
+        token.map      = [ startLine, startLine + 1 ];
+        token.children = [];
+
+        token          = state.push('th_close', 'th', -1);
       }
-      if (wraps[i]) {
-        token.attrs.push([ 'class', '.export_wrap' ]);
-      }
 
-      token          = state.push('inline', '', 0);
-      token.content  = columns[i].trim();
-      token.map      = [ startLine, startLine + 1 ];
-      token.children = [];
-
-      token          = state.push('th_close', 'th', -1);
+      token     = state.push('tr_close', 'tr', -1);
     }
 
-    token     = state.push('tr_close', 'tr', -1);
     token     = state.push('thead_close', 'thead', -1);
 
     token     = state.push('tbody_open', 'tbody', 1);
