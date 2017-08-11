@@ -66,8 +66,8 @@ module.exports = function multimd_table_plugin(md) {
   }
 
   function table(state, startLine, endLine, silent) {
-    var lineText, i, headerLine, seperatorLine, nextLine, columns, columnCount, token,
-      aligns, wraps, t, tableLines, tbodyLines;
+    var lineText, i, headerLine, seperatorLine, nextLine, columns, columnCount,
+      token, aligns, wraps, t, tableLines, tbodyLines;
 
     // should have at least two lines
     if (startLine + 2 > endLine) { return false; }
@@ -85,31 +85,20 @@ module.exports = function multimd_table_plugin(md) {
       wraps = [];
       for (i = 0; i < columns.length; i++) {
         t = columns[i].trim();
-        if (!t) {
-          // allow empty columns before and after table, but not in between columns;
-          // e.g. allow ` |---| `, disallow ` ---||--- `
-          if (i === 0 || i === columns.length - 1) {
-            continue;
-          } else {
-            // might be another header line
-            seperatorLine++;
-            aligns = [];
-            wraps = [];
-            break;
-          }
+        if (!t && (i === 0 || i === columns.length - 1)) {
+          continue;
         } else if (!/^:?(-+|=+|\.+):?\+?$/.test(t)) {
+          // might be another header line, so initialize
           seperatorLine++;
           aligns = [];
           wraps = [];
           break;
         }
 
-        if (t.charCodeAt(t.length - 1) === 0x2B/* + */) {
-          wraps.push(true);
-          t = t.slice(0, -1);
-        } else {
-          wraps.push(false);
-        }
+        // pushed as wraps[i]
+        wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
+        if (wraps[i]) { t = t.slice(0, -1); }
+
         switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
              (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
           case 0x00: aligns.push('');       break;
@@ -138,7 +127,7 @@ module.exports = function multimd_table_plugin(md) {
     token.map = tableLines = [ startLine, 0 ];
 
     token     = state.push('thead_open', 'thead', 1);
-    token.map = [ startLine, startLine + 1 ];
+    token.map = [ startLine, seperatorLine - 1 ];
 
     for (headerLine = startLine; headerLine < seperatorLine; headerLine++) {
       lineText = getLine(state, headerLine).trim();
@@ -151,12 +140,8 @@ module.exports = function multimd_table_plugin(md) {
         token          = state.push('th_open', 'th', 1);
         token.map      = [ startLine, startLine + 1 ];
         token.attrs    = [];
-        if (aligns[i]) {
-          token.attrs.push([ 'style', 'text-align:' + aligns[i] ]);
-        }
-        if (wraps[i]) {
-          token.attrs.push([ 'class', '.export_wrap' ]);
-        }
+        if (aligns[i]) { token.attrs.push([ 'style', 'text-align:' + aligns[i] ]); }
+        if (wraps[i]) { token.attrs.push([ 'class', '.export_wrap' ]); }
 
         token          = state.push('inline', '', 0);
         token.content  = columns[i].trim();
@@ -172,7 +157,7 @@ module.exports = function multimd_table_plugin(md) {
     token     = state.push('thead_close', 'thead', -1);
 
     token     = state.push('tbody_open', 'tbody', 1);
-    token.map = tbodyLines = [ startLine + 2, 0 ];
+    token.map = tbodyLines = [ seperatorLine + 1, 0 ];
 
     for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
       if (state.sCount[nextLine] < state.blkIndent) { break; }
@@ -187,12 +172,8 @@ module.exports = function multimd_table_plugin(md) {
       for (i = 0; i < columnCount; i++) {
         token          = state.push('td_open', 'td', 1);
         token.attrs    = [];
-        if (aligns[i]) {
-          token.attrs.push([ 'style', 'text-align:' + aligns[i] ]);
-        }
-        if (wraps[i]) {
-          token.attrs.push([ 'class', '.export_wrap' ]);
-        }
+        if (aligns[i]) { token.attrs.push([ 'style', 'text-align:' + aligns[i] ]); }
+        if (wraps[i]) { token.attrs.push([ 'class', '.export_wrap' ]); }
 
         token          = state.push('inline', '', 0);
         token.content  = columns[i] ? columns[i].trim() : '';
