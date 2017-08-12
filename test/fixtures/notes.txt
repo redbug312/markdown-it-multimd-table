@@ -255,6 +255,42 @@ Content       |   **Cell**    |         Cell |
 .
 
 Cells can be empty.:
+Assumed must with pipe characters on its both side
+
+.
+|             |                             ||
+|             | Second Header | Third Header |
+ ------------ | :-----------: | -----------: |
+Content       |                             ||
+|             |               |         Cell |
+[Prototype table]
+.
+<table>
+<caption id="prototypetable">Prototype table</caption>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center" colspan="2"></th>
+</tr>
+<tr>
+<th></th>
+<th style="text-align:center">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center" colspan="2"></td>
+</tr>
+<tr>
+<td></td>
+<td style="text-align:center"></td>
+<td style="text-align:right">Cell</td>
+</tr>
+</tbody>
+</table>
+.
 
 You can create multiple <tbody> tags (for HTML) within a table by having a single empty line between rows of the table. This allows your CSS to place horizontal borders to emphasize different sections of the table. This feature doesn’t work in all output formats (e.g. RTF and OpenDocument).:
 
