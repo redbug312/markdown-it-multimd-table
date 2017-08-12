@@ -84,20 +84,6 @@ module.exports = function multimd_table_plugin(md) {
     return colspans;
   }
 
-  // function countColspan(columns) {
-  //     var contentIdxs, colspans;
-  //
-  //     // find all indice with content
-  //     contentIdxs = columns.reduce((acc, val, idx) => val ? acc.concat(idx) : acc, []);
-  //     if (contentIdxs[0] !== 0) { contentIdxs.unshift(0); }
-  //     contentIdxs.push(columns.length);
-  //     // find subtraction of every two elements
-  //     colspans = contentIdxs.map((ele, idx, arr) => idx ? ele - arr[idx - 1] : 0);
-  //     colspans.shift();
-  //
-  //     return colspans;
-  // }
-
   function table(state, startLine, endLine, silent) {
     var lineText, i, col, headerLine, seperatorLine, nextLine, columns, columnCount,
       token, aligns, wraps, colspans, t, tableLines, tbodyLines;

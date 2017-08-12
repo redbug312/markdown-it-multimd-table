@@ -145,6 +145,7 @@ Content       |   **Cell**    |         Cell |
 </table>
 ```
 ## You can use normal Markdown markup within the table cells.
+> NOTE: From Definitions of PHP Markdown Extra, "normal" means "inline". If in this case, test cases are ignored.
 
 ## Captions are optional, but if present must be at the beginning of the line immediately preceding or following the table, start with [, and end with ]. If you have a caption before and after the table, only the first match will be used.
 
