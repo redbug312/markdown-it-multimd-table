@@ -1,7 +1,7 @@
 {
   "name": "markdown-it-multimd-table",
-  "version": "0.0.1",
-  "description": "markdown-it for Multimarkdown extended table syntax.",
+  "version": "1.0.0",
+  "description": "Multimarkdown table syntax plugin for markdown-it markdown parser",
   "keywords": [
     "markdown-it-plugin",
     "markdown-it",
@@ -9,13 +9,13 @@
     "multimarkdown",
     "table"
   ],
-  "homepage": "",
+  "homepage": "https://github.com/RedBug312/markdown-it-multimd-table",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git://github.com/RedBug312/markdown-it-multimd-table.git"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/RedBug312/markdown-it-multimd-table/issues"
   },
   "license": "MIT",
   "main": "index.js",
