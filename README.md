@@ -1,3 +1,7 @@
+[![NPM version](https://img.shields.io/npm/v/markdown-it-multimd-table.svg?style=flat)](https://www.npmjs.org/package/markdown-it-multimd-table)
+[![Build Status](https://travis-ci.org/RedBug312/markdown-it-multimd-table.svg?branch=master)](https://travis-ci.org/RedBug312/markdown-it-multimd-table)
+[![Coverage Status](https://coveralls.io/repos/github/RedBug312/markdown-it-multimd-table/badge.svg?branch=master)](https://coveralls.io/github/RedBug312/markdown-it-multimd-table?branch=master)
+
 Multimarkdown table syntax plugin for markdown-it markdown parser 
 
 ## Intro
@@ -22,7 +26,7 @@ md.render(/*...*/)
 
 For test, do this in terminal:
 ```bash
-$ npm install markdown-it markdown-it-multimd-table --prefix .
+$ npm install markdown-it-multimd-table --prefix .
 $ vim test.js
 
 var md = require('markdown-it')()
