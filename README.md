@@ -1,3 +1,5 @@
+Multimarkdown table syntax plugin for markdown-it markdown parser 
+
 ## Intro
 Bored with HTML table tags when I need some extended table functions like `colspan` in Markdown. I found that [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/) had defined complete and clear rules for advanced table syntax, which is compatible to standard Markdown table syntax at the same time.
 
@@ -5,6 +7,8 @@ For example, the following features are given:
 * `colspan` attribute
 * Multiple `<thead>` and `<tbody>`
 * Captions
+
+So I altered the table parser in markdown-it for the Multimarkdown syntax.
 
 NOTE: This plugin might behave differently from MultiMarkdown for some edging cases; For this plugin was developed mainly under the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables). Please impose an issue if you find problems related.
 
@@ -18,8 +22,7 @@ md.render(/*...*/)
 
 For test, do this in terminal:
 ```bash
-$ git clone https://github.com/RedBug312/markdown-it-multimd-table.git
-$ npm install markdown-it --save
+$ npm install markdown-it markdown-it-multimd-table --prefix .
 $ vim test.js
 
 var md = require('markdown-it')()

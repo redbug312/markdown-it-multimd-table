@@ -17,6 +17,7 @@
   "bugs": {
     "url": "https://github.com/RedBug312/markdown-it-multimd-table/issues"
   },
+  "author": "RedBug312",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
