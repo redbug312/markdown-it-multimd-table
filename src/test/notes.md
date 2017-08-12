@@ -53,6 +53,35 @@ New section   |     More      |         Data |</p>
 
 ## To set alignment, you can use a colon to designate left or right alignment, or a colon at each end to designate center alignment, as above. If no colon is present, the default alignment of your system is selected (left in most cases). If the separator line ends with +, then cells in that column will be wrapped when exporting to LaTeX if they are long enough.
 
+```markdown
+First Header  | Second Header | Third Header |
+============  | :==========:+ | -----------: |
+Content       |   **Cell**    |         Cell |
+New section   |     More      |         Data |
+```
+```html
+<table>
+<thead>
+<tr>
+<th>First Header</th>
+<th style="text-align:center" class=".wrappable">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center" class=".wrappable"><strong>Cell</strong></td>
+<td style="text-align:right">Cell</td>
+</tr>
+<tr>
+<td>New section</td>
+<td style="text-align:center" class=".wrappable">More</td>
+<td style="text-align:right">Data</td>
+</tr>
+</tbody>
+</table>
+```
 
 ## To indicate that a cell should span multiple columns, then simply add additional pipes (|) at the end of the cell, as shown in the example. If the cell in question is at the end of the row, then of course that means that pipes are not optional at the end of that row…. The number of pipes equals the number of columns the cell should span.
 

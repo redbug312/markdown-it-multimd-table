@@ -91,19 +91,19 @@ New section   |     More      |         Data |
 <thead>
 <tr>
 <th>First Header</th>
-<th style="text-align:center" class=".export_wrap">Second Header</th>
+<th style="text-align:center" class=".wrappable">Second Header</th>
 <th style="text-align:right">Third Header</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Content</td>
-<td style="text-align:center" class=".export_wrap"><strong>Cell</strong></td>
+<td style="text-align:center" class=".wrappable"><strong>Cell</strong></td>
 <td style="text-align:right">Cell</td>
 </tr>
 <tr>
 <td>New section</td>
-<td style="text-align:center" class=".export_wrap">More</td>
+<td style="text-align:center" class=".wrappable">More</td>
 <td style="text-align:right">Data</td>
 </tr>
 </tbody>

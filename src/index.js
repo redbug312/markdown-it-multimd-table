@@ -141,7 +141,7 @@ module.exports = function multimd_table_plugin(md) {
                 token.map      = [ startLine, startLine + 1 ];
                 token.attrs    = [];
                 if (aligns[i]) { token.attrs.push([ 'style', 'text-align:' + aligns[i] ]); }
-                if (wraps[i]) { token.attrs.push([ 'class', '.export_wrap' ]); }
+                if (wraps[i]) { token.attrs.push([ 'class', '.wrappable' ]); }
 
                 token          = state.push('inline', '', 0);
                 token.content  = columns[i].trim();
@@ -173,7 +173,7 @@ module.exports = function multimd_table_plugin(md) {
                 token          = state.push('td_open', 'td', 1);
                 token.attrs    = [];
                 if (aligns[i]) { token.attrs.push([ 'style', 'text-align:' + aligns[i] ]); }
-                if (wraps[i]) { token.attrs.push([ 'class', '.export_wrap' ]); }
+                if (wraps[i]) { token.attrs.push([ 'class', '.wrappable' ]); }
 
                 token          = state.push('inline', '', 0);
                 token.content  = columns[i] ? columns[i].trim() : '';
