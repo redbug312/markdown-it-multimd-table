@@ -79,7 +79,7 @@ NOTE: no implementation detailed about denoting wrappable, use class `export_wra
 
 .
 First Header  | Second Header | Third Header |
-............  | :==========:+ | -----------: |
+============  | :==========:+ | -----------: |
 Content       |   **Cell**    |         Cell |
 New section   |     More      |         Data |
 .

@@ -82,7 +82,7 @@ New section   |      More     |        Data  |</p>
 
 ```markdown
 First Header  | Second Header | Third Header |
-............  | :==========:+ | -----------: |
+============  | :==========:+ | -----------: |
 Content       |   **Cell**    |         Cell |
 New section   |     More      |         Data |
 ```

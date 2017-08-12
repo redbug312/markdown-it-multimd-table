@@ -87,7 +87,7 @@ module.exports = function multimd_table_plugin(md) {
                 t = columns[i].trim();
                 if (!t && (i === 0 || i === columns.length - 1)) {
                     continue;
-                } else if (!/^:?(-+|=+|\.+):?\+?$/.test(t)) {
+                } else if (!/^:?(-+|=+):?\+?$/.test(t)) {
                     // might be another header line, so initialize
                     seperatorLine++;
                     aligns = [];
