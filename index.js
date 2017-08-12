@@ -84,17 +84,18 @@ module.exports = function multimd_table_plugin(md) {
     return colspans;
   }
 
-  function table(state, startLine, endLine, silent) {
-    var lineText, i, col, headerLine, seperatorLine, nextLine, columns, columnCount,
-      token, aligns, wraps, colspans, t, tableLines, tbodyLines;
+  function table(state, startLine, endLine, silent, captionInfo) {
+    var lineText, i, col, captionLine, headerLine,
+      seperatorLine, nextLine, columns, columnCount, token, aligns, wraps,
+      colspans, t, tableLines, tbodyLines;
 
     // should have at least two lines
     if (startLine + 2 > endLine) { return false; }
 
     seperatorLine = startLine + 1;
     if (state.sCount[seperatorLine] < state.blkIndent) { return false; }
-    if (state.sCount[seperatorLine] - state.blkIndent >= 4) { return false; }
     // if it's indented more than 3 spaces, it should be a code block
+    if (state.sCount[seperatorLine] - state.blkIndent >= 4) { return false; }
 
     while (!isFilledArray(aligns)) {
       lineText = getLine(state, seperatorLine);
@@ -144,6 +145,21 @@ module.exports = function multimd_table_plugin(md) {
 
     token     = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
+
+    if (captionInfo[0]) {
+      captionLine = (captionInfo[2] & 0x10) ? startLine - 1 : endLine + 1;
+
+      token          = state.push('caption_open', 'caption', 1);
+      token.map      = [ captionLine, captionLine + 1 ];
+      token.attrs    = [ [ 'id', captionInfo[1].toLowerCase().replace(/[^a-z]/g, '') ] ];
+
+      token          = state.push('inline', '', 0);
+      token.content  = captionInfo[0];
+      token.map      = [ captionLine, captionLine + 1 ];
+      token.children = [];
+
+      token         = state.push('caption_close', 'caption', -1);
+    }
 
     token     = state.push('thead_open', 'thead', 1);
     token.map = [ startLine, seperatorLine - 1 ];
@@ -217,5 +233,39 @@ module.exports = function multimd_table_plugin(md) {
     state.line = nextLine;
     return true;
   }
-  md.block.ruler.at('table', table, { alt: [ 'paragraph', 'reference' ] });
+
+  function tableWithCaption(state, startLine, endLine, silent) {
+    var lineText, result, captionInfo;
+
+    // captionInfo: [ caption, label, captionLinePos ]
+    captionInfo = [ null, null, 0 ];
+
+    lineText = getLine(state, endLine - 1);
+    result = lineText.match(/^\[(.+)\](\[(.+)\])?$/);
+    if (result) {
+      captionInfo = [ result[1],
+              result[2] || result[1],
+              captionInfo[2] | 0x01 ];
+    }
+
+    lineText = getLine(state, startLine);
+    result = lineText.match(/^\[(.+)\](\[(.+)\])?$/);
+    if (result) {
+      captionInfo = [ result[1],
+              result[2] || result[1],
+              captionInfo[2] | 0x10 ];
+    }
+
+    result = table(state,
+            startLine + ((captionInfo[2] & 0x10) === 0x10),
+            endLine   - ((captionInfo[2] & 0x01) === 0x01),
+            silent, captionInfo);
+    if (result && !silent) {
+      state.line += (captionInfo[2] & 0x01);
+    }
+
+    return result;
+  }
+
+  md.block.ruler.at('table', tableWithCaption, { alt: [ 'paragraph', 'reference' ] });
 };
