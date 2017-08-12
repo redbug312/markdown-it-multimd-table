@@ -82,6 +82,63 @@ New section   |     More      |         Data |
 
 To indicate that a cell should span multiple columns, then simply add additional pipes (|) at the end of the cell, as shown in the example. If the cell in question is at the end of the row, then of course that means that pipes are not optional at the end of that row…. The number of pipes equals the number of columns the cell should span.:
 
+.
+|             |          Grouping           ||
+First Header  | Second Header | Third Header |
+ ------------ | :-----------: | -----------: |
+Content       |          *Long Cell*        ||
+Content       |   **Cell**    |         Cell |
+.
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center" colspan="2">Grouping</th>
+</tr>
+<tr>
+<th>First Header</th>
+<th style="text-align:center">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center" colspan="2"><em>Long Cell</em></td>
+</tr>
+<tr>
+<td>Content</td>
+<td style="text-align:center"><strong>Cell</strong></td>
+<td style="text-align:right">Cell</td>
+</tr>
+</tbody>
+</table>
+.
+
+.
+|             |          Grouping           ||
+ ------------ | :-----------: | -----------: |
+|          *Long Cell*       ||
+|                                          |||         Cell |
+.
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center" colspan="2">Grouping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2"><em>Long Cell</em></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td colspan="3"></td>
+</tr>
+</tbody>
+</table>
+.
 You can use normal Markdown markup within the table cells.:
 
 Captions are optional, but if present must be at the beginning of the line immediately preceding or following the table, start with [, and end with ]. If you have a caption before and after the table, only the first match will be used.:

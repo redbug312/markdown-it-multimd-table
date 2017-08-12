@@ -64,9 +64,43 @@ module.exports = function multimd_table_plugin(md) {
     return result;
   }
 
+  function countColspan(columns) {
+    var i, emptyCount, colspans;
+
+    emptyCount = 0;
+    colspans = [];
+    for (i = columns.length - 1; i >= 0; i--) {
+      if (columns[i]) {
+        colspans.unshift(emptyCount + 1);
+        emptyCount = 0;
+      } else {
+        emptyCount++;
+      }
+    }
+    if (emptyCount > 0) {
+      colspans.unshift(emptyCount + 1);
+    }
+
+    return colspans;
+  }
+
+  // function countColspan(columns) {
+  //     var contentIdxs, colspans;
+  //
+  //     // find all indice with content
+  //     contentIdxs = columns.reduce((acc, val, idx) => val ? acc.concat(idx) : acc, []);
+  //     if (contentIdxs[0] !== 0) { contentIdxs.unshift(0); }
+  //     contentIdxs.push(columns.length);
+  //     // find subtraction of every two elements
+  //     colspans = contentIdxs.map((ele, idx, arr) => idx ? ele - arr[idx - 1] : 0);
+  //     colspans.shift();
+  //
+  //     return colspans;
+  // }
+
   function table(state, startLine, endLine, silent) {
-    var lineText, i, headerLine, seperatorLine, nextLine, columns, columnCount,
-      token, aligns, wraps, t, tableLines, tbodyLines;
+    var lineText, i, col, headerLine, seperatorLine, nextLine, columns, columnCount,
+      token, aligns, wraps, colspans, t, tableLines, tbodyLines;
 
     // should have at least two lines
     if (startLine + 2 > endLine) { return false; }
@@ -131,23 +165,27 @@ module.exports = function multimd_table_plugin(md) {
     for (headerLine = startLine; headerLine < seperatorLine; headerLine++) {
       lineText = getLine(state, headerLine).trim();
       columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
+      colspans = countColspan(columns);
 
       token     = state.push('tr_open', 'tr', 1);
       token.map = [ startLine, startLine + 1 ];
 
-      for (i = 0; i < columns.length; i++) {
+      for (i = 0, col = 0; col < columns.length; i++) {
         token          = state.push('th_open', 'th', 1);
-        token.map      = [ startLine, startLine + 1 ];
+        token.map      = [ headerLine, headerLine + 1 ];
         token.attrs    = [];
-        if (aligns[i]) { token.attrs.push([ 'style', 'text-align:' + aligns[i] ]); }
-        if (wraps[i]) { token.attrs.push([ 'class', '.wrappable' ]); }
+        if (aligns[col]) { token.attrs.push([ 'style', 'text-align:' + aligns[col] ]); }
+        if (wraps[col]) { token.attrs.push([ 'class', '.wrappable' ]); }
+        if (colspans[i] > 1) { token.attrs.push([ 'colspan', colspans[i] ]); }
 
         token          = state.push('inline', '', 0);
         token.content  = columns[i].trim();
-        token.map      = [ startLine, startLine + 1 ];
+        token.map      = [ headerLine, headerLine + 1 ];
         token.children = [];
 
         token          = state.push('th_close', 'th', -1);
+
+        col += colspans[i] || 1;
       }
 
       token     = state.push('tr_close', 'tr', -1);
@@ -166,19 +204,23 @@ module.exports = function multimd_table_plugin(md) {
       if (state.sCount[nextLine] - state.blkIndent >= 4) { break; }
       columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
       if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { break; }
+      colspans = countColspan(columns);
 
       token = state.push('tr_open', 'tr', 1);
-      for (i = 0; i < columnCount; i++) {
+      for (i = 0, col = 0; col < columnCount; i++) {
         token          = state.push('td_open', 'td', 1);
         token.attrs    = [];
-        if (aligns[i]) { token.attrs.push([ 'style', 'text-align:' + aligns[i] ]); }
-        if (wraps[i]) { token.attrs.push([ 'class', '.wrappable' ]); }
+        if (aligns[col]) { token.attrs.push([ 'style', 'text-align:' + aligns[col] ]); }
+        if (wraps[col]) { token.attrs.push([ 'class', '.wrappable' ]); }
+        if (colspans[i] > 1) { token.attrs.push([ 'colspan', colspans[i] ]); }
 
         token          = state.push('inline', '', 0);
         token.content  = columns[i] ? columns[i].trim() : '';
         token.children = [];
 
         token          = state.push('td_close', 'td', -1);
+
+        col += colspans[i] || 1;
       }
       token = state.push('tr_close', 'tr', -1);
     }
