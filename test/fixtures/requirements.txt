@@ -1,5 +1,5 @@
-# MultiMarkdown Tables: Requirements
-From [MultiMarkdown](http://fletcher.github.io/MultiMarkdown-4/tables)
+# MultiMarkdown Tables: Other Notes
+From [MultiMarkdown 5](http://fletcher.github.io/MultiMarkdown-5)
 
 Standards:
 

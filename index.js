@@ -85,9 +85,8 @@ module.exports = function multimd_table_plugin(md) {
   }
 
   function table(state, startLine, endLine, silent, captionInfo) {
-    var lineText, i, col, captionLine, headerLine,
-      seperatorLine, nextLine, columns, columnCount, token, aligns, wraps,
-      colspans, t, tableLines, tbodyLines;
+    var lineText, i, col, captionLine, headerLine, seperatorLine, nextLine,
+      columns, columnCount, token, aligns, wraps, colspans, t, tableLines, tbodyLines;
 
     // should have at least two lines
     if (startLine + 2 > endLine) { return false; }
@@ -151,7 +150,7 @@ module.exports = function multimd_table_plugin(md) {
 
       token          = state.push('caption_open', 'caption', 1);
       token.map      = [ captionLine, captionLine + 1 ];
-      token.attrs    = [ [ 'id', captionInfo[1].toLowerCase().replace(/[^a-z]/g, '') ] ];
+      token.attrs    = [ [ 'id', captionInfo[1].toLowerCase().replace(/\W+/g, '') ] ];
 
       token          = state.push('inline', '', 0);
       token.content  = captionInfo[0];
@@ -241,7 +240,7 @@ module.exports = function multimd_table_plugin(md) {
     captionInfo = [ null, null, 0 ];
 
     lineText = getLine(state, endLine - 1);
-    result = lineText.match(/^\[(.+)\](\[(.+)\])?$/);
+    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?$/);
     if (result) {
       captionInfo = [ result[1],
               result[2] || result[1],
@@ -249,7 +248,7 @@ module.exports = function multimd_table_plugin(md) {
     }
 
     lineText = getLine(state, startLine);
-    result = lineText.match(/^\[(.+)\](\[(.+)\])?$/);
+    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?$/);
     if (result) {
       captionInfo = [ result[1],
               result[2] || result[1],

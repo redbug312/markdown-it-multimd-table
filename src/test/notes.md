@@ -148,7 +148,7 @@ Content       |   **Cell**    |         Cell |
 > NOTE: From Definitions of PHP Markdown Extra, "normal" means "inline". If in this case, test cases are ignored.
 
 ## Captions are optional, but if present must be at the beginning of the line immediately preceding or following the table, start with [, and end with ]. If you have a caption before and after the table, only the first match will be used.
-> NOTE: caption has higher priority than table content, as the next example
+> NOTE: Assumed that caption has higher priority than table content, as the next example
 
 ```markdown
 |             |          Grouping           ||
@@ -224,6 +224,43 @@ Content       |   **Cell**    |         Cell |
 ```
 
 ## If you have a caption, you can also have a label, allowing you to create anchors pointing to the table. If there is no label, then the caption acts as the label
+
+```markdown
+[Prototype table][label1]
+|             |          Grouping           ||
+First Header  | Second Header | Third Header |
+ ------------ | :-----------: | -----------: |
+Content       |          *Long Cell*        ||
+Content       |   **Cell**    |         Cell |
+[Prototype table caption][label2]
+```
+```html
+<table>
+<caption id="label1">Prototype table</caption>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center" colspan="2">Grouping</th>
+</tr>
+<tr>
+<th>First Header</th>
+<th style="text-align:center">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center" colspan="2"><em>Long Cell</em></td>
+</tr>
+<tr>
+<td>Content</td>
+<td style="text-align:center"><strong>Cell</strong></td>
+<td style="text-align:right">Cell</td>
+</tr>
+</tbody>
+</table>
+```
 
 ## Cells can be empty.
 
