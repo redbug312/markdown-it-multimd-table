@@ -32,10 +32,12 @@ New section   |     More      |         Data |
 </table>
 .
 
-It is optional whether you have | characters at the beginning and end of lines.:
+Note 1:
+It is optional whether you have `|` characters at the beginning and end of lines.
 NOTE: Defined in PHP Markdown Extra. Test cases ignored.
 
-The “separator” line uses ---- or ==== to indicate the line between a header and cell. The length of the line doesn’t matter, but must have at least one character per cell.:
+Note 2:
+The “separator” line uses `----` or `====` to indicate the line between a header and cell. The length of the line doesn’t matter, but must have at least one character per cell.
 
 .
 First Header  | Second Header | Third Header |
@@ -49,7 +51,8 @@ Content       |   <strong>Cell</strong>    |         Cell |
 New section   |     More      |         Data |</p>
 .
 
-To set alignment, you can use a colon to designate left or right alignment, or a colon at each end to designate center alignment, as above. If no colon is present, the default alignment of your system is selected (left in most cases). If the separator line ends with +, then cells in that column will be wrapped when exporting to LaTeX if they are long enough.:
+Note 3:
+To set alignment, you can use a colon to designate left or right alignment, or a colon at each end to designate center alignment, as above. If no colon is present, the default alignment of your system is selected (left in most cases). If the separator line ends with +, then cells in that column will be wrapped when exporting to LaTeX if they are long enough.
 
 .
 First Header  | Second Header | Third Header |
@@ -80,7 +83,8 @@ New section   |     More      |         Data |
 </table>
 .
 
-To indicate that a cell should span multiple columns, then simply add additional pipes (|) at the end of the cell, as shown in the example. If the cell in question is at the end of the row, then of course that means that pipes are not optional at the end of that row…. The number of pipes equals the number of columns the cell should span.:
+Note 4:
+To indicate that a cell should span multiple columns, then simply add additional pipes (`|`) at the end of the cell, as shown in the example. If the cell in question is at the end of the row, then of course that means that pipes are not optional at the end of that row…. The number of pipes equals the number of columns the cell should span.
 
 .
 |             |          Grouping           ||
@@ -139,10 +143,12 @@ Content       |   **Cell**    |         Cell |
 </tbody>
 </table>
 .
-You can use normal Markdown markup within the table cells.:
+Note 5:
+You can use normal Markdown markup within the table cells.
 NOTE: From Definitions of PHP Markdown Extra, "normal" means "inline". If in this case, test cases are ignored.
 
-Captions are optional, but if present must be at the beginning of the line immediately preceding or following the table, start with [, and end with ]. If you have a caption before and after the table, only the first match will be used.:
+Note 6:
+Captions are optional, but if present must be at the beginning of the line immediately preceding or following the table, start with `[`, and end with `]`. If you have a caption before and after the table, only the first match will be used.
 NOTE: Assumed that caption has higher priority than table content, as the next example
 
 .
@@ -216,7 +222,8 @@ Content       |   **Cell**    |         Cell |
 </table>
 .
 
-If you have a caption, you can also have a label, allowing you to create anchors pointing to the table. If there is no label, then the caption acts as the label:
+Note 7:
+If you have a caption, you can also have a label, allowing you to create anchors pointing to the table. If there is no label, then the caption acts as the label
 
 .
 [Prototype table][label1]
@@ -254,7 +261,8 @@ Content       |   **Cell**    |         Cell |
 </table>
 .
 
-Cells can be empty.:
+Note 8:
+Cells can be empty.
 Assumed must with pipe characters on its both side
 
 .
@@ -292,7 +300,8 @@ Content       |                             ||
 </table>
 .
 
-You can create multiple <tbody> tags (for HTML) within a table by having a single empty line between rows of the table. This allows your CSS to place horizontal borders to emphasize different sections of the table. This feature doesn’t work in all output formats (e.g. RTF and OpenDocument).:
+Note 9:
+You can create multiple <tbody> tags (for HTML) within a table by having a single empty line between rows of the table. This allows your CSS to place horizontal borders to emphasize different sections of the table. This feature doesn’t work in all output formats (e.g. RTF and OpenDocument).
 NOTE: any empty tbody is not allowed
 
 .
