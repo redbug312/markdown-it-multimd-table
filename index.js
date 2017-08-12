@@ -86,7 +86,8 @@ module.exports = function multimd_table_plugin(md) {
 
   function table(state, startLine, endLine, silent, captionInfo) {
     var lineText, i, col, captionLine, headerLine, seperatorLine, nextLine,
-      columns, columnCount, token, aligns, wraps, colspans, t, tableLines, tbodyLines;
+      columns, columnCount, token, aligns, wraps, colspans, t, tableLines,
+      tbodyLines, emptyTableBody;
 
     // should have at least two lines
     if (startLine + 2 > endLine) { return false; }
@@ -197,15 +198,32 @@ module.exports = function multimd_table_plugin(md) {
     token     = state.push('tbody_open', 'tbody', 1);
     token.map = tbodyLines = [ seperatorLine + 1, 0 ];
 
+    emptyTableBody = true;
+
     for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
       if (state.sCount[nextLine] < state.blkIndent) { break; }
 
       lineText = getLine(state, nextLine).trim();
+
+      // HACK: avoid outer while loop
+      if (!lineText && !emptyTableBody) {
+        tbodyLines[1] = nextLine - 1;
+        token     = state.push('tbody_close', 'tbody', -1);
+        token     = state.push('tbody_open', 'tbody', 1);
+        token.map = tbodyLines = [ nextLine + 1, 0 ];
+        emptyTableBody = true;
+        continue;
+      } else if (!lineText) {
+        break;
+      }
+
       if (lineText.indexOf('|') === -1) { break; }
       if (state.sCount[nextLine] - state.blkIndent >= 4) { break; }
       columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
       if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { break; }
       colspans = countColspan(columns);
+
+      emptyTableBody = false;
 
       token = state.push('tr_open', 'tr', 1);
       for (i = 0, col = 0; col < columnCount; i++) {
