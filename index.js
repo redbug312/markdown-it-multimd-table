@@ -177,7 +177,7 @@ module.exports = function multimd_table_plugin(md) {
         token.map      = [ headerLine, headerLine + 1 ];
         token.attrs    = [];
         if (aligns[col]) { token.attrs.push([ 'style', 'text-align:' + aligns[col] ]); }
-        if (wraps[col]) { token.attrs.push([ 'class', '.wrappable' ]); }
+        if (wraps[col]) { token.attrs.push([ 'class', 'extend' ]); }
         if (colspans[i] > 1) { token.attrs.push([ 'colspan', colspans[i] ]); }
 
         token          = state.push('inline', '', 0);
@@ -230,7 +230,7 @@ module.exports = function multimd_table_plugin(md) {
         token          = state.push('td_open', 'td', 1);
         token.attrs    = [];
         if (aligns[col]) { token.attrs.push([ 'style', 'text-align:' + aligns[col] ]); }
-        if (wraps[col]) { token.attrs.push([ 'class', '.wrappable' ]); }
+        if (wraps[col]) { token.attrs.push([ 'class', 'extend' ]); }
         if (colspans[i] > 1) { token.attrs.push([ 'colspan', colspans[i] ]); }
 
         token          = state.push('inline', '', 0);
@@ -258,7 +258,7 @@ module.exports = function multimd_table_plugin(md) {
     captionInfo = [ null, null, 0 ];
 
     lineText = getLine(state, endLine - 1);
-    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?$/);
+    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
     if (result) {
       captionInfo = [ result[1],
               result[2] || result[1],
@@ -266,7 +266,7 @@ module.exports = function multimd_table_plugin(md) {
     }
 
     lineText = getLine(state, startLine);
-    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?$/);
+    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
     if (result) {
       captionInfo = [ result[1],
               result[2] || result[1],
