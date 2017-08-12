@@ -18,34 +18,35 @@ module.exports = function multimd_table_plugin(md) {
         var result = [],
             pos = 0,
             max = str.length,
-            ch,
             escapes = 0,
             lastPos = 0,
             backTicked = false,
             lastBackTick = 0;
 
-        ch = str.charCodeAt(pos);
-
         while (pos < max) {
-            if (ch === 0x60/* ` */) {
-                if (backTicked) {
-                    // make \` close code sequence, but not open it;
-                    // the reason is: `\` is correct code block
-                    backTicked = false;
-                    lastBackTick = pos;
-                } else if ((escapes & 1) === 0) {
-                    backTicked = true;
-                    lastBackTick = pos;
-                }
-            } else if (ch === 0x7c/* | */ && (escapes & 1) === 0 && !backTicked) {
-                result.push(str.slice(lastPos, pos));
-                lastPos = pos + 1;
-            }
-
-            if (ch === 0x5c/* \ */) {
-                escapes++;
-            } else {
-                escapes = 0;
+            switch (str.charCodeAt(pos)) {
+                case 0x5c/* \ */:
+                    escapes++;
+                    break;
+                case 0x60/* ` */:
+                    if (backTicked || ((escapes & 1) === 0)) {
+                        // make \` close code sequence, but not open it;
+                        // the reason is: `\` is correct code block
+                        backTicked = !backTicked;
+                        lastBackTick = pos;
+                    }
+                    escapes = 0;
+                    break;
+                case 0x7c/* | */:
+                    if ((escapes & 1) === 0 && !backTicked) {
+                        result.push(str.slice(lastPos, pos));
+                        lastPos = pos + 1;
+                    }
+                    escapes = 0;
+                    break;
+                default:
+                    escapes = 0;
+                    break;
             }
 
             pos++;
@@ -56,8 +57,6 @@ module.exports = function multimd_table_plugin(md) {
                 backTicked = false;
                 pos = lastBackTick + 1;
             }
-
-            ch = str.charCodeAt(pos);
         }
 
         result.push(str.slice(lastPos));
