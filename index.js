@@ -106,6 +106,7 @@ module.exports = function multimd_table_plugin(md) {
       for (i = 0; i < columns.length; i++) {
         t = columns[i].trim();
         if (!t && (i === 0 || i === columns.length - 1)) {
+          // leading or tailing pipe characters
           continue;
         } else if (!/^:?(-+|=+):?\+?$/.test(t)) {
           // might be another header line, so initialize
@@ -146,15 +147,15 @@ module.exports = function multimd_table_plugin(md) {
     token     = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
 
-    if (captionInfo[0]) {
-      captionLine = (captionInfo[2] & 0x10) ? startLine - 1 : endLine + 1;
+    if (captionInfo.caption) {
+      captionLine = (captionInfo.linePos & 0x10) ? startLine - 1 : endLine + 1;
 
       token          = state.push('caption_open', 'caption', 1);
       token.map      = [ captionLine, captionLine + 1 ];
-      token.attrs    = [ [ 'id', captionInfo[1].toLowerCase().replace(/\W+/g, '') ] ];
+      token.attrs    = [ [ 'id', captionInfo.label.toLowerCase().replace(/\W+/g, '') ] ];
 
       token          = state.push('inline', '', 0);
-      token.content  = captionInfo[0];
+      token.content  = captionInfo.caption;
       token.map      = [ captionLine, captionLine + 1 ];
       token.children = [];
 
@@ -254,31 +255,30 @@ module.exports = function multimd_table_plugin(md) {
   function tableWithCaption(state, startLine, endLine, silent) {
     var lineText, result, captionInfo;
 
-    // captionInfo: [ caption, label, captionLinePos ]
-    captionInfo = [ null, null, 0 ];
+    captionInfo = { caption: null, label: null, linePos: 0 };
 
     lineText = getLine(state, endLine - 1);
     result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
     if (result) {
-      captionInfo = [ result[1],
-              result[2] || result[1],
-              captionInfo[2] | 0x01 ];
+      captionInfo.caption = result[1];
+      captionInfo.label = result[2] || result[1];
+      captionInfo.linePos |= 0x01;
     }
 
     lineText = getLine(state, startLine);
     result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
     if (result) {
-      captionInfo = [ result[1],
-              result[2] || result[1],
-              captionInfo[2] | 0x10 ];
+      captionInfo.caption = result[1];
+      captionInfo.label = result[2] || result[1];
+      captionInfo.linePos |= 0x10;
     }
 
     result = table(state,
-            startLine + ((captionInfo[2] & 0x10) === 0x10),
-            endLine   - ((captionInfo[2] & 0x01) === 0x01),
+            startLine + ((captionInfo.linePos & 0x10) === 0x10),
+            endLine   - ((captionInfo.linePos & 0x01) === 0x01),
             silent, captionInfo);
     if (result && !silent) {
-      state.line += (captionInfo[2] & 0x01);
+      state.line += (captionInfo.linePos & 0x01);
     }
 
     return result;
