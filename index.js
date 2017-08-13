@@ -18,46 +18,41 @@ module.exports = function multimd_table_plugin(md) {
     var result = [],
       pos = 0,
       max = str.length,
-      escapes = 0,
       lastPos = 0,
-      backTicked = false,
-      lastBackTick = 0;
+      escaped = false,
+      backTicked = false;
 
-    while (pos < max) {
+    for (pos = 0; pos < max; pos++) {
       switch (str.charCodeAt(pos)) {
         case 0x5c/* \ */:
-          escapes++;
+          escaped = true;
           break;
         case 0x60/* ` */:
-          if (backTicked || ((escapes & 1) === 0)) {
+          if (backTicked || !escaped) {
             // make \` close code sequence, but not open it;
             // the reason is: `\` is correct code block
             backTicked = !backTicked;
-            lastBackTick = pos;
           }
-          escapes = 0;
+          escaped = false;
           break;
         case 0x7c/* | */:
-          if ((escapes & 1) === 0 && !backTicked) {
+          if (!backTicked && !escaped) {
             result.push(str.slice(lastPos, pos));
             lastPos = pos + 1;
           }
-          escapes = 0;
+          escaped = false;
           break;
         default:
-          escapes = 0;
+          escaped = false;
           break;
       }
-
-      pos++;
-
-      // If there was an un-closed backtick, go back to just after
-      // the last backtick, but as if it was a normal character
-      if (pos === max && backTicked) {
-        backTicked = false;
-        pos = lastBackTick + 1;
-      }
     }
+
+    // If there was an un-closed backtick, go back to just after
+    // the last backtick, but as if it was a normal character
+    // if (backTicked) {
+    //     lastPos = lastBackTick + 1;
+    // }
 
     result.push(str.slice(lastPos));
 
