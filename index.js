@@ -1,12 +1,6 @@
-// Process definition lists
-//
 'use strict';
 
 module.exports = function multimd_table_plugin(md) {
-  function isFilledArray(array) {
-    return typeof array !== 'undefined' && array.length > 0;
-  }
-
   function getLine(state, line) {
     var pos = state.bMarks[line] + state.blkIndent,
       max = state.eMarks[line];
@@ -48,12 +42,6 @@ module.exports = function multimd_table_plugin(md) {
       }
     }
 
-    // If there was an un-closed backtick, go back to just after
-    // the last backtick, but as if it was a normal character
-    // if (backTicked) {
-    //     lastPos = lastBackTick + 1;
-    // }
-
     result.push(str.slice(lastPos));
 
     return result;
@@ -79,167 +67,194 @@ module.exports = function multimd_table_plugin(md) {
     return colspans;
   }
 
-  function table(state, startLine, endLine, silent, captionInfo) {
-    var lineText, i, col, captionLine, headerLine, seperatorLine, nextLine,
-      columns, columnCount, token, aligns, wraps, colspans, t, tableLines,
-      tbodyLines, emptyTableBody;
+  function caption(state, lineText, lineNum, silent) {
+    var captionInfo, result, token;
 
-    // should have at least two lines
-    if (startLine + 2 > endLine) { return false; }
+    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
+    if (!result) { return false; }
+    if (silent) { return true; }
 
-    seperatorLine = startLine + 1;
-    if (state.sCount[seperatorLine] < state.blkIndent) { return false; }
-    // if it's indented more than 3 spaces, it should be a code block
-    if (state.sCount[seperatorLine] - state.blkIndent >= 4) { return false; }
+    captionInfo = { caption: null, label: null };
+    captionInfo.content = result[1];
+    captionInfo.label = result[2] || result[1];
 
-    while (!isFilledArray(aligns)) {
-      lineText = getLine(state, seperatorLine);
-      columns = lineText.split('|');
-      if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
-      aligns = [];
-      wraps = [];
-      for (i = 0; i < columns.length; i++) {
-        t = columns[i].trim();
-        if (!t && (i === 0 || i === columns.length - 1)) {
-          // leading or tailing pipe characters
-          continue;
-        } else if (!/^:?(-+|=+):?\+?$/.test(t)) {
-          // might be another header line, so initialize
-          seperatorLine++;
-          aligns = [];
-          wraps = [];
-          break;
-        }
+    token          = state.push('caption_open', 'caption', 1);
+    token.map      = [ lineNum, lineNum + 1 ];
+    token.attrs    = [ [ 'id', captionInfo.label.toLowerCase().replace(/\W+/g, '') ] ];
 
-        // pushed as wraps[i]
-        wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
-        if (wraps[i]) { t = t.slice(0, -1); }
+    token          = state.push('inline', '', 0);
+    token.content  = captionInfo.content;
+    token.map      = [ lineNum, lineNum + 1 ];
+    token.children = [];
 
-        switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
-             (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
-          case 0x00: aligns.push('');       break;
-          case 0x01: aligns.push('right');  break;
-          case 0x10: aligns.push('left');   break;
-          case 0x11: aligns.push('center'); break;
-        }
+    token         = state.push('caption_close', 'caption', -1);
+
+    return captionInfo;
+  }
+
+  function tableRow(state, lineText, lineNum, silent, seperatorInfo, rowType) {
+    var rowInfo, columns, token, i, col;
+
+    columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
+    // lineText does not contain valid pipe character
+    if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+    if (silent) { return true; }
+      // console.log(lineText + ': ' + columns.length);
+
+    rowInfo = { colspans: null, columns: null };
+    rowInfo.columns = columns.filter(Boolean);
+    rowInfo.colspans = countColspan(columns);
+
+    token     = state.push('tr_open', 'tr', 1);
+    token.map = [ lineNum, lineNum + 1 ];
+
+    for (i = 0, col = 0; i < rowInfo.columns.length && col < seperatorInfo.aligns.length;
+       col += rowInfo.colspans[i], i++) {
+      // console.log(col)
+      token          = state.push(rowType + '_open', rowType, 1);
+      token.map      = [ lineNum, lineNum + 1 ];
+      token.attrs    = [];
+      if (seperatorInfo.aligns[col]) {
+        token.attrs.push([ 'style', 'text-align:' + seperatorInfo.aligns[col] ]);
+      }
+      if (seperatorInfo.wraps[col]) {
+        token.attrs.push([ 'class', 'extend' ]);
+      }
+      if (rowInfo.colspans[i] > 1) {
+        token.attrs.push([ 'colspan', rowInfo.colspans[i] ]);
+      }
+
+      token          = state.push('inline', '', 0);
+      token.content  = rowInfo.columns[i].trim();
+      token.map      = [ lineNum, lineNum + 1 ];
+      token.children = [];
+
+      token          = state.push(rowType + '_close', rowType, -1);
+    }
+
+    token     = state.push('tr_close', 'tr', -1);
+
+    return rowInfo;
+  }
+
+  function seperator(state, lineText, lineNum, silent) {
+    var columns, seperatorInfo, i, t;
+
+    columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
+    // lineText does not contain valid pipe character
+    if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+
+    seperatorInfo = { aligns: [], wraps: [] };
+
+    for (i = 0; i < columns.length; i++) {
+      t = columns[i].trim();
+      // console.log(t);
+      if (!/^:?(-+|=+):?\+?$/.test(t)) { return false; }
+
+      seperatorInfo.wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
+      if (seperatorInfo.wraps[i]) { t = t.slice(0, -1); }
+
+      switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
+           (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
+        case 0x00: seperatorInfo.aligns.push('');       break;
+        case 0x01: seperatorInfo.aligns.push('right');  break;
+        case 0x10: seperatorInfo.aligns.push('left');   break;
+        case 0x11: seperatorInfo.aligns.push('center'); break;
       }
     }
 
-    for (headerLine = startLine; headerLine < seperatorLine; headerLine++) {
-      lineText = getLine(state, headerLine).trim();
-      if (lineText.indexOf('|') === -1) { return false; }
-      if (state.sCount[startLine] - state.blkIndent >= 4) { return false; }
+    return silent || seperatorInfo;
+  }
 
-      // header row will define an amount of columns in the entire table,
-      // and align row shouldn't be smaller than that (the rest of the rows can)
-      columnCount = escapedSplit(lineText.replace(/^\||\|$/g, '')).length;
-      if (columnCount > aligns.length) { return false; }
-      if (columnCount === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+  function table(state, startLine, endLine, silent) {
+    // Regex pseudo code for table:
+    // caption? tableRow+ seperator (tableRow+ | empty)* caption?
+    var seperatorLine, captionAtFirst, captionAtLast, lineText, nextLine,
+      seperatorInfo, token, tableLines,
+      tbodyLines, emptyTBody;
+
+    if (startLine + 2 > endLine) { return false; }
+    if (state.sCount[startLine] - state.blkIndent >= 4) { return false; }
+
+    captionAtFirst = captionAtLast = false;
+
+    // first line
+    lineText = getLine(state, startLine).trim();
+    if (caption(state, lineText, startLine, true)) {
+      captionAtFirst = true;
+    } else if (!tableRow(state, lineText, startLine, true, null, 'tr')) {
+      return false;
     }
 
+    // second line ~ seperator line
+    for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
+      if (state.sCount[nextLine] - state.blkIndent >= 4) { return false; }
+      lineText = getLine(state, nextLine).trim();
+      if (seperator(state, lineText, nextLine, true)) {
+        seperatorLine = nextLine;
+        break;
+      } else if (tableRow(state, lineText, nextLine, true, null, 'th')) {
+        continue;
+      } else {
+        return false;
+      }
+    }
+    if (!seperatorLine) { return false; }
     if (silent) { return true; }
 
-    token     = state.push('table_open', 'table', 1);
+    token = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
 
-    if (captionInfo.caption) {
-      captionLine = (captionInfo.linePos & 0x10) ? startLine - 1 : endLine + 1;
+    seperatorInfo = seperator(state, lineText, seperatorLine, false);
 
-      token          = state.push('caption_open', 'caption', 1);
-      token.map      = [ captionLine, captionLine + 1 ];
-      token.attrs    = [ [ 'id', captionInfo.label.toLowerCase().replace(/\W+/g, '') ] ];
-
-      token          = state.push('inline', '', 0);
-      token.content  = captionInfo.caption;
-      token.map      = [ captionLine, captionLine + 1 ];
-      token.children = [];
-
-      token         = state.push('caption_close', 'caption', -1);
+    if (captionAtFirst) {
+      lineText = getLine(state, startLine).trim();
+      caption(state, lineText, startLine, false);
     }
 
     token     = state.push('thead_open', 'thead', 1);
-    token.map = [ startLine, seperatorLine - 1 ];
+    token.map = [ startLine + captionAtFirst, seperatorLine ];
 
-    for (headerLine = startLine; headerLine < seperatorLine; headerLine++) {
-      lineText = getLine(state, headerLine).trim();
-      columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
-      colspans = countColspan(columns);
+    for (nextLine = startLine + captionAtFirst; nextLine < seperatorLine; nextLine++) {
 
-      token     = state.push('tr_open', 'tr', 1);
-      token.map = [ startLine, startLine + 1 ];
-
-      for (i = 0, col = 0; col < columns.length; i++) {
-        token          = state.push('th_open', 'th', 1);
-        token.map      = [ headerLine, headerLine + 1 ];
-        token.attrs    = [];
-        if (aligns[col]) { token.attrs.push([ 'style', 'text-align:' + aligns[col] ]); }
-        if (wraps[col]) { token.attrs.push([ 'class', 'extend' ]); }
-        if (colspans[i] > 1) { token.attrs.push([ 'colspan', colspans[i] ]); }
-
-        token          = state.push('inline', '', 0);
-        token.content  = columns[i].trim();
-        token.map      = [ headerLine, headerLine + 1 ];
-        token.children = [];
-
-        token          = state.push('th_close', 'th', -1);
-
-        col += colspans[i] || 1;
-      }
-
-      token     = state.push('tr_close', 'tr', -1);
+      lineText = getLine(state, nextLine).trim();
+      tableRow(state, lineText, nextLine, false, seperatorInfo, 'th');
     }
 
     token     = state.push('thead_close', 'thead', -1);
 
+    emptyTBody = true;
+
     token     = state.push('tbody_open', 'tbody', 1);
     token.map = tbodyLines = [ seperatorLine + 1, 0 ];
 
-    emptyTableBody = true;
-
     for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
-      if (state.sCount[nextLine] < state.blkIndent) { break; }
-
       lineText = getLine(state, nextLine).trim();
 
-      // HACK: avoid outer while loop
-      if (!lineText && !emptyTableBody) {
+      if (state.sCount[nextLine] - state.blkIndent >= 4) {
+        break;
+      } else if (!captionAtFirst && caption(state, lineText, nextLine, true)) {
+        captionAtLast = true;
+        break;
+      } else if (tableRow(state, lineText, nextLine, false, seperatorInfo, 'td')) {
+        emptyTBody = false;
+      } else if (!emptyTBody && !lineText) {
         tbodyLines[1] = nextLine - 1;
         token     = state.push('tbody_close', 'tbody', -1);
         token     = state.push('tbody_open', 'tbody', 1);
         token.map = tbodyLines = [ nextLine + 1, 0 ];
-        emptyTableBody = true;
-        continue;
-      } else if (!lineText) {
+        emptyTBody = true;
+      } else {
         break;
       }
-
-      if (lineText.indexOf('|') === -1) { break; }
-      if (state.sCount[nextLine] - state.blkIndent >= 4) { break; }
-      columns = escapedSplit(lineText.replace(/^\||\|$/g, ''));
-      if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { break; }
-      colspans = countColspan(columns);
-
-      emptyTableBody = false;
-
-      token = state.push('tr_open', 'tr', 1);
-      for (i = 0, col = 0; col < columnCount; i++) {
-        token          = state.push('td_open', 'td', 1);
-        token.attrs    = [];
-        if (aligns[col]) { token.attrs.push([ 'style', 'text-align:' + aligns[col] ]); }
-        if (wraps[col]) { token.attrs.push([ 'class', 'extend' ]); }
-        if (colspans[i] > 1) { token.attrs.push([ 'colspan', colspans[i] ]); }
-
-        token          = state.push('inline', '', 0);
-        token.content  = columns[i] ? columns[i].trim() : '';
-        token.children = [];
-
-        token          = state.push('td_close', 'td', -1);
-
-        col += colspans[i] || 1;
-      }
-      token = state.push('tr_close', 'tr', -1);
     }
     token = state.push('tbody_close', 'tbody', -1);
+
+    if (captionAtLast) {
+      caption(state, lineText, nextLine, false);
+      nextLine++;
+    }
+
     token = state.push('table_close', 'table', -1);
 
     tableLines[1] = tbodyLines[1] = nextLine;
@@ -247,37 +262,5 @@ module.exports = function multimd_table_plugin(md) {
     return true;
   }
 
-  function tableWithCaption(state, startLine, endLine, silent) {
-    var lineText, result, captionInfo;
-
-    captionInfo = { caption: null, label: null, linePos: 0 };
-
-    lineText = getLine(state, endLine - 1);
-    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
-    if (result) {
-      captionInfo.caption = result[1];
-      captionInfo.label = result[2] || result[1];
-      captionInfo.linePos |= 0x01;
-    }
-
-    lineText = getLine(state, startLine);
-    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
-    if (result) {
-      captionInfo.caption = result[1];
-      captionInfo.label = result[2] || result[1];
-      captionInfo.linePos |= 0x10;
-    }
-
-    result = table(state,
-            startLine + ((captionInfo.linePos & 0x10) === 0x10),
-            endLine   - ((captionInfo.linePos & 0x01) === 0x01),
-            silent, captionInfo);
-    if (result && !silent) {
-      state.line += (captionInfo.linePos & 0x01);
-    }
-
-    return result;
-  }
-
-  md.block.ruler.at('table', tableWithCaption, { alt: [ 'paragraph', 'reference' ] });
+  md.block.ruler.at('table', table, { alt: [ 'paragraph', 'reference' ] });
 };

@@ -140,7 +140,6 @@ Content       |   **Cell**    |         Cell |
 <tbody>
 <tr>
 <td colspan="2"><em>Long Cell</em></td>
-<td style="text-align:right"></td>
 </tr>
 <tr>
 <td colspan="3"></td>
@@ -166,7 +165,6 @@ Content       |   **Cell**    |         Cell |
 ```
 ```html
 <table>
-<caption id="">             |               |              </caption>
 <thead>
 <tr>
 <th></th>
@@ -189,6 +187,7 @@ Content       |   **Cell**    |         Cell |
 <td style="text-align:right">Cell</td>
 </tr>
 </tbody>
+<caption id="">             |               |              </caption>
 </table>
 ```
 
@@ -227,6 +226,7 @@ Content       |   **Cell**    |         Cell |
 </tr>
 </tbody>
 </table>
+<p>[Prototype table caption]</p>
 ```
 
 ## Note 7
@@ -267,6 +267,7 @@ Content       |   **Cell**    |         Cell |
 </tr>
 </tbody>
 </table>
+<p>[Prototype table caption][label2]</p>
 ```
 
 ## Note 8
@@ -283,7 +284,6 @@ Content       |                             ||
 ```
 ```html
 <table>
-<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -306,6 +306,7 @@ Content       |                             ||
 <td style="text-align:right">Cell</td>
 </tr>
 </tbody>
+<caption id="prototypetable">Prototype table</caption>
 </table>
 ```
 
@@ -326,7 +327,6 @@ And more      | With an escaped '\|'         ||
 ```
 ```html
 <table>
-<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -360,6 +360,7 @@ And more      | With an escaped '\|'         ||
 <td style="text-align:center" colspan="2">With an escaped '|'</td>
 </tr>
 </tbody>
+<caption id="prototypetable">Prototype table</caption>
 </table>
 ```
 
@@ -377,7 +378,6 @@ And more      | With an escaped '\|'         ||
 ```
 ```html
 <table>
-<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>

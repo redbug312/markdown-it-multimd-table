@@ -3,6 +3,7 @@ From [MultiMarkdown 5](http://fletcher.github.io/MultiMarkdown-5)
 
 Standards:
 
+
 .
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
@@ -36,6 +37,7 @@ Requirement 1: There must be at least one | per line:
 NOTE: Assumed legal pipe chars, could be leading, tailing or both
 
 (Against at line 4)
+
 .
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
@@ -53,8 +55,6 @@ New section  \|     More     `|`        Data\|
 <tbody>
 <tr>
 <td>Content      |   <strong>Cell</strong>   |         Cell</td>
-<td style="text-align:center"></td>
-<td style="text-align:right"></td>
 </tr>
 </tbody>
 </table>
@@ -62,6 +62,7 @@ New section  \|     More     `|`        Data\|
 .
 
 (Against at line 1)
+
 .
 First Header \| Second Header`|`Third Header\|
 ------------  | :-----------: | -----------: |
@@ -76,6 +77,7 @@ New section   |      More     |        Data  |</p>
 
 Requirement 2: The “separator” line between headers and table content must contain only |,-, =, :,., +, or spaces:
 NOTE: no implementation details about denoting wrappable, follows MultiMarkdown-5 `extend` class
+
 
 .
 First Header  | Second Header | Third Header |
@@ -108,6 +110,7 @@ New section   |     More      |         Data |
 
 Requirement 3: Cell content must be on one line only:
 
+
 .
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
@@ -132,7 +135,6 @@ New section   |     1. More
 <tr>
 <td>New section</td>
 <td style="text-align:center">1. More</td>
-<td style="text-align:right"></td>
 </tr>
 </tbody>
 </table>
@@ -147,6 +149,7 @@ Requirement 5: The first line of the table, and the alignment/divider line, must
 NOTE: The example in MultiMarkdown breaks this requirement. I altered this rule as follows:
 The headers of the table, and the alignment/divider line, must start at the beginning of the line
     ^^^^^^^
+
 
 .
 |             |   Grouping    |              |
@@ -189,6 +192,7 @@ New section   |     More      |         Data |
 </table>
 .
 
+
 .
 |             |   Grouping    |              |
 ------------  |               |  Grouping 2  |
@@ -229,6 +233,7 @@ New section   |     More      |         Data |
 </tbody>
 </table>
 .
+
 
 .
 |             |   Grouping    |              |

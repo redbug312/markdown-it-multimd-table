@@ -55,8 +55,6 @@ New section  \|     More     `|`        Data\|
 <tbody>
 <tr>
 <td>Content      |   <strong>Cell</strong>   |         Cell</td>
-<td style="text-align:center"></td>
-<td style="text-align:right"></td>
 </tr>
 </tbody>
 </table>
@@ -137,7 +135,6 @@ New section   |     1. More
 <tr>
 <td>New section</td>
 <td style="text-align:center">1. More</td>
-<td style="text-align:right"></td>
 </tr>
 </tbody>
 </table>
