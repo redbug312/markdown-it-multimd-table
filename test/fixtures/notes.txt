@@ -3,6 +3,7 @@ From [MultiMarkdown 5](http://fletcher.github.io/MultiMarkdown-5)
 
 Standards:
 
+
 .
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
@@ -39,6 +40,7 @@ NOTE: Defined in PHP Markdown Extra. Test cases ignored.
 Note 2:
 The “separator” line uses `----` or `====` to indicate the line between a header and cell. The length of the line doesn’t matter, but must have at least one character per cell.
 
+
 .
 First Header  | Second Header | Third Header |
 ============  | ::+           | -----------: |
@@ -53,6 +55,7 @@ New section   |     More      |         Data |</p>
 
 Note 3:
 To set alignment, you can use a colon to designate left or right alignment, or a colon at each end to designate center alignment, as above. If no colon is present, the default alignment of your system is selected (left in most cases). If the separator line ends with +, then cells in that column will be wrapped when exporting to LaTeX if they are long enough.
+
 
 .
 First Header  | Second Header | Third Header |
@@ -86,6 +89,7 @@ New section   |     More      |         Data |
 Note 4:
 To indicate that a cell should span multiple columns, then simply add additional pipes (`|`) at the end of the cell, as shown in the example. If the cell in question is at the end of the row, then of course that means that pipes are not optional at the end of that row…. The number of pipes equals the number of columns the cell should span.
 
+
 .
 |             |          Grouping           ||
 First Header  | Second Header | Third Header |
@@ -118,6 +122,7 @@ Content       |   **Cell**    |         Cell |
 </tbody>
 </table>
 .
+
 
 .
 |             |          Grouping           ||
@@ -135,7 +140,6 @@ Content       |   **Cell**    |         Cell |
 <tbody>
 <tr>
 <td colspan="2"><em>Long Cell</em></td>
-<td style="text-align:right"></td>
 </tr>
 <tr>
 <td colspan="3"></td>
@@ -151,6 +155,7 @@ Note 6:
 Captions are optional, but if present must be at the beginning of the line immediately preceding or following the table, start with `[`, and end with `]`. If you have a caption before and after the table, only the first match will be used.
 NOTE: Assumed that caption has higher priority than table content, as the next example
 
+
 .
 |             |          Grouping           ||
 First Header  | Second Header | Third Header |
@@ -160,7 +165,6 @@ Content       |   **Cell**    |         Cell |
 [             |               |              ]
 .
 <table>
-<caption id="">             |               |              </caption>
 <thead>
 <tr>
 <th></th>
@@ -183,8 +187,10 @@ Content       |   **Cell**    |         Cell |
 <td style="text-align:right">Cell</td>
 </tr>
 </tbody>
+<caption id="">             |               |              </caption>
 </table>
 .
+
 
 .
 [Prototype table]
@@ -220,10 +226,12 @@ Content       |   **Cell**    |         Cell |
 </tr>
 </tbody>
 </table>
+<p>[Prototype table caption]</p>
 .
 
 Note 7:
 If you have a caption, you can also have a label, allowing you to create anchors pointing to the table. If there is no label, then the caption acts as the label
+
 
 .
 [Prototype table][label1]
@@ -259,11 +267,13 @@ Content       |   **Cell**    |         Cell |
 </tr>
 </tbody>
 </table>
+<p>[Prototype table caption][label2]</p>
 .
 
 Note 8:
 Cells can be empty.
 Assumed must with pipe characters on its both side
+
 
 .
 |             |                             ||
@@ -274,7 +284,6 @@ Content       |                             ||
 [Prototype table]
 .
 <table>
-<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -297,12 +306,14 @@ Content       |                             ||
 <td style="text-align:right">Cell</td>
 </tr>
 </tbody>
+<caption id="prototypetable">Prototype table</caption>
 </table>
 .
 
 Note 9:
 You can create multiple <tbody> tags (for HTML) within a table by having a single empty line between rows of the table. This allows your CSS to place horizontal borders to emphasize different sections of the table. This feature doesn’t work in all output formats (e.g. RTF and OpenDocument).
 NOTE: any empty tbody is not allowed
+
 
 .
 |             |          Grouping           ||
@@ -316,7 +327,6 @@ And more      | With an escaped '\|'         ||
 [Prototype table]
 .
 <table>
-<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -350,8 +360,10 @@ And more      | With an escaped '\|'         ||
 <td style="text-align:center" colspan="2">With an escaped '|'</td>
 </tr>
 </tbody>
+<caption id="prototypetable">Prototype table</caption>
 </table>
 .
+
 
 .
 |             |          Grouping           ||
@@ -366,7 +378,6 @@ And more      | With an escaped '\|'         ||
 [Prototype table]
 .
 <table>
-<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>

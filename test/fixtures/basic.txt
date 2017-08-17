@@ -2,6 +2,7 @@
 From [PHP Markdown Extra](https://michelf.ca/projects/php-markdown/extra/)
 
 Simple:
+
 .
 First Header  | Second Header
 ------------- | -------------
@@ -29,6 +30,7 @@ Content Cell  | Content Cell
 .
 
 Leading and Tailing pipes:
+
 .
 | First Header  | Second Header |
 | ------------- | ------------- |
@@ -56,6 +58,7 @@ Leading and Tailing pipes:
 .
 
 Alignments:
+
 .
 | Item      | Value |
 | :-------: | -----:|
@@ -88,6 +91,7 @@ Alignments:
 .
 
 Span-level Formatting:
+
 .
 | Function name | Description                    |
 | ------------- | ------------------------------ |

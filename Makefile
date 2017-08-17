@@ -17,7 +17,7 @@ index.js: src/index.js
 test/fixtures/%.txt: src/test/%.md
 	sed -re 's/^##\ ?(.+)$$/\1:/g'  \
 		-re 's/^>\ //g'             \
-		-re 's/^```markdown$$/./g'  \
+		-re 's/^```markdown$$/\n./g'\
 		-re '/```html/d'            \
 		-re 's/^```$$/./g' $< > $@
 
