@@ -30,7 +30,7 @@ $ npm install markdown-it-multimd-table --prefix .
 $ vim test.js
 
 var md = require('markdown-it')()
-            .use(require('./markdown-it-multimd-table'));
+            .use(require('markdown-it-multimd-table'));
 const exampleTable =
 "|             |          Grouping           || \n" +
 "First Header  | Second Header | Third Header | \n" +
