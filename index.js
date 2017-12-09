@@ -140,8 +140,11 @@ module.exports = function multimd_table_plugin(md) {
   function seperator(state, lineText, lineNum, silent) {
     var columns, seperatorInfo, i, t;
 
-    columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
+    // lineText have code indentation
+    if (state.sCount[lineNum] - state.blkIndent >= 4) { return false; }
+
     // lineText does not contain valid pipe character
+    columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
 
     seperatorInfo = { aligns: [], wraps: [] };
@@ -174,7 +177,6 @@ module.exports = function multimd_table_plugin(md) {
       tbodyLines, emptyTBody;
 
     if (startLine + 2 > endLine) { return false; }
-    if (state.sCount[startLine] - state.blkIndent >= 4) { return false; }
 
     captionAtFirst = captionAtLast = false;
 
@@ -188,7 +190,6 @@ module.exports = function multimd_table_plugin(md) {
 
     // second line ~ seperator line
     for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
-      if (state.sCount[nextLine] - state.blkIndent >= 4) { return false; }
       lineText = getLine(state, nextLine).trim();
       if (seperator(state, lineText, nextLine, true)) {
         seperatorLine = nextLine;
@@ -231,9 +232,7 @@ module.exports = function multimd_table_plugin(md) {
     for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
       lineText = getLine(state, nextLine).trim();
 
-      if (state.sCount[nextLine] - state.blkIndent >= 4) {
-        break;
-      } else if (!captionAtFirst && caption(state, lineText, nextLine, true)) {
+      if (!captionAtFirst && caption(state, lineText, nextLine, true)) {
         captionAtLast = true;
         break;
       } else if (tableRow(state, lineText, nextLine, false, seperatorInfo, 'td')) {
