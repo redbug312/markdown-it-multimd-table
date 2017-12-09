@@ -136,10 +136,12 @@ New section   |     1. More
 <td>New section</td>
 <td style="text-align:center">1. More</td>
 </tr>
+<tr>
+<td>2. MORE!</td>
+<td style="text-align:center">Data</td>
+</tr>
 </tbody>
 </table>
-<pre><code>                2. MORE!  |         Data |
-</code></pre>
 .
 
 Requirement 4: Columns are separated by |:
