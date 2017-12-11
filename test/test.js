@@ -27,3 +27,10 @@ describe('Other Notes', function () {
 
   generate(path.join(__dirname, 'fixtures/notes.txt'), md);
 });
+
+describe('Issues', function () {
+  var md = require('markdown-it')()
+              .use(require('../'));
+
+  generate(path.join(__dirname, 'fixtures/issues.txt'), md);
+});
