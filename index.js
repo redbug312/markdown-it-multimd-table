@@ -263,3 +263,5 @@ module.exports = function multimd_table_plugin(md) {
 
   md.block.ruler.at('table', table, { alt: [ 'paragraph', 'reference' ] });
 };
+
+/* vim: set ts=2 sw=2 et: */
