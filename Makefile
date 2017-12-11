@@ -11,31 +11,30 @@ GITHUB_PROJ := https://github.com//markdown-it/${NPM_PACKAGE}
 
 TEST_CASES  := $(patsubst src/test/%.md,test/fixtures/%.txt,$(wildcard src/test/*.md))
 
-index.js: src/index.js
-	sed -re 's/^(\ *)\1/\1/g' $< > $@
+MODULE_PATH := ./node_modules/.bin
 
 lint:
-	./node_modules/.bin/eslint .
+	${MODULE_PATH}/eslint .
 
 test: lint
-	./node_modules/.bin/mocha -R spec
+	${MODULE_PATH}/mocha -R spec
 
 coverage:
 	rm -rf coverage
-	./node_modules/.bin/istanbul cover node_modules/.bin/_mocha
+	${MODULE_PATH}/istanbul cover node_modules/.bin/_mocha
 
 test-ci: lint
-	istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ${MODULE_PATH}/coveralls && rm -rf ./coverage
 
 browserify:
 	rm -rf ./dist
 	mkdir dist
 	# Browserify
 	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" ; \
-		./node_modules/.bin/browserify ./ -s markdownitDeflist \
+		${MODULE_PATH}/browserify ./ -s markdownitDeflist \
 		) > dist/markdown-it-multimd-table.js
 	# Minify
-	./node_modules/.bin/uglifyjs dist/markdown-it-multimd-table.js -b beautify=false,ascii-only=true -c -m \
+	${MODULE_PATH}/uglifyjs dist/markdown-it-multimd-table.js -b beautify=false,ascii-only=true -c -m \
 		--preamble "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" \
 		> dist/markdown-it-multimd-table.min.js
 
