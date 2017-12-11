@@ -39,7 +39,7 @@ const exampleTable =
 "Content       |   **Cell**    |         Cell | \n" +
 "                                               \n" +
 "New section   |     More      |         Data | \n" +
-"And more      | With an escaped '\\|'        ||\n" +
+"And more      | With an escaped '\|'         ||\n" +
 "[Prototype table]                              \n";
 console.log(md.render(exampleTable));
 
