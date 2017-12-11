@@ -3,8 +3,7 @@
 module.exports = function multimd_table_plugin(md) {
   function getLine(state, line) {
     var pos = state.bMarks[line] + state.blkIndent,
-      max = state.eMarks[line];
-
+        max = state.eMarks[line];
     return state.src.slice(pos, max);
   }
 
@@ -72,7 +71,7 @@ module.exports = function multimd_table_plugin(md) {
 
     result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
     if (!result) { return false; }
-    if (silent) { return true; }
+    if (silent)  { return true; }
 
     captionInfo = { caption: null, label: null };
     captionInfo.content = result[1];
@@ -99,7 +98,6 @@ module.exports = function multimd_table_plugin(md) {
     // lineText does not contain valid pipe character
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
     if (silent) { return true; }
-      // console.log(lineText + ': ' + columns.length);
 
     rowInfo = { colspans: null, columns: null };
     rowInfo.columns = columns.filter(Boolean);
@@ -109,8 +107,7 @@ module.exports = function multimd_table_plugin(md) {
     token.map = [ lineNum, lineNum + 1 ];
 
     for (i = 0, col = 0; i < rowInfo.columns.length && col < seperatorInfo.aligns.length;
-       col += rowInfo.colspans[i], i++) {
-      // console.log(col)
+                         col += rowInfo.colspans[i], i++) {
       token          = state.push(rowType + '_open', rowType, 1);
       token.map      = [ lineNum, lineNum + 1 ];
       token.attrs    = [];
@@ -151,14 +148,15 @@ module.exports = function multimd_table_plugin(md) {
 
     for (i = 0; i < columns.length; i++) {
       t = columns[i].trim();
-      // console.log(t);
       if (!/^:?(-+|=+):?\+?$/.test(t)) { return false; }
 
       seperatorInfo.wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
-      if (seperatorInfo.wraps[i]) { t = t.slice(0, -1); }
+      if (seperatorInfo.wraps[i]) {
+        t = t.slice(0, -1);
+      }
 
       switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
-           (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
+               (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
         case 0x00: seperatorInfo.aligns.push('');       break;
         case 0x01: seperatorInfo.aligns.push('right');  break;
         case 0x10: seperatorInfo.aligns.push('left');   break;
@@ -170,11 +168,11 @@ module.exports = function multimd_table_plugin(md) {
   }
 
   function table(state, startLine, endLine, silent) {
-    // Regex pseudo code for table:
-    // caption? tableRow+ seperator (tableRow+ | empty)* caption?
+    /* Regex pseudo code for table:
+     * caption? tableRow+ seperator (tableRow+ | empty)* caption?
+     */
     var seperatorLine, captionAtFirst, captionAtLast, lineText, nextLine,
-      seperatorInfo, token, tableLines,
-      tbodyLines, emptyTBody;
+        seperatorInfo, token, tableLines, tbodyLines, emptyTBody;
 
     if (startLine + 2 > endLine) { return false; }
 
@@ -191,6 +189,7 @@ module.exports = function multimd_table_plugin(md) {
     // second line ~ seperator line
     for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
       lineText = getLine(state, nextLine).trim();
+
       if (seperator(state, lineText, nextLine, true)) {
         seperatorLine = nextLine;
         break;
@@ -217,17 +216,15 @@ module.exports = function multimd_table_plugin(md) {
     token.map = [ startLine + captionAtFirst, seperatorLine ];
 
     for (nextLine = startLine + captionAtFirst; nextLine < seperatorLine; nextLine++) {
-
       lineText = getLine(state, nextLine).trim();
       tableRow(state, lineText, nextLine, false, seperatorInfo, 'th');
     }
 
     token     = state.push('thead_close', 'thead', -1);
 
-    emptyTBody = true;
-
     token     = state.push('tbody_open', 'tbody', 1);
     token.map = tbodyLines = [ seperatorLine + 1, 0 ];
+    emptyTBody = true;
 
     for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
       lineText = getLine(state, nextLine).trim();
@@ -262,6 +259,7 @@ module.exports = function multimd_table_plugin(md) {
   }
 
   md.block.ruler.at('table', table, { alt: [ 'paragraph', 'reference' ] });
+
 };
 
 /* vim: set ts=2 sw=2 et: */

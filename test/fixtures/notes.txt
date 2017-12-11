@@ -323,7 +323,7 @@ Content       |          *Long Cell*        ||
 Content       |   **Cell**    |         Cell |
                                               
 New section   |     More      |         Data |
-And more      | With an escaped '\|'         ||  
+And more      | With an escaped '\|'         ||
 [Prototype table]
 .
 <table>
@@ -374,7 +374,7 @@ Content       |          *Long Cell*        ||
 Content       |   **Cell**    |         Cell |
 
 New section   |     More      |         Data |
-And more      | With an escaped '\|'         ||  
+And more      | With an escaped '\|'         ||
 [Prototype table]
 .
 <table>
@@ -394,6 +394,6 @@ And more      | With an escaped '\|'         ||
 <p>Content       |          <em>Long Cell</em>        ||
 Content       |   <strong>Cell</strong>    |         Cell |</p>
 <p>New section   |     More      |         Data |
-And more      | With an escaped '|'         ||<br>
+And more      | With an escaped '|'         ||
 [Prototype table]</p>
 .
