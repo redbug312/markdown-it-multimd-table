@@ -4,12 +4,12 @@ Requirement: A backslash at the end of a line indicates that in the cell below
 should be treated as in *the same row*
 
 .
-A       | B
---------|-------
-text    | 1\
-over    | 2\
-several |\
-lines   |
+A         | B
+----------|-------
+text:     | 1\
+- over    | 2\
+- several |\
+- lines   |
 .
 <table>
 <thead>
@@ -20,12 +20,18 @@ lines   |
 </thead>
 <tbody>
 <tr>
-<td>text
-over
-several
-lines</td>
-<td>1
-2</td>
+<td>
+<p>text:</p>
+<ul>
+<li>over</li>
+<li>several</li>
+<li>lines</li>
+</ul>
+</td>
+<td>
+<p>1
+2</p>
+</td>
 </tr>
 </tbody>
 </table>

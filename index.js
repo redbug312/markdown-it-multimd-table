@@ -93,6 +93,23 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     return captionInfo;
   }
 
+  function appendRowToken(state, content, startLine, endLine) {
+    var linesCount, blockParser, tmpState, token;
+    linesCount = content.split(/\n/).length;
+
+    if (linesCount > 1) {
+      // Multiline content => subparsing as a block to support lists
+      blockParser = state.md.block;
+      tmpState = new blockParser.State(content, state.md, state.env, state.tokens);
+      blockParser.tokenize(tmpState, 0, linesCount); // appends to state.tokens
+    } else {
+      token          = state.push('inline', '', 0);
+      token.content  = content;
+      token.map      = [ startLine, endLine ];
+      token.children = [];
+    }
+  }
+
   function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType) {
     var rowInfo, columns, nextLineText, nextColumn, token, i, col;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
@@ -135,10 +152,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
         token.attrs.push([ 'colspan', rowInfo.colspans[i] ]);
       }
 
-      token          = state.push('inline', '', 0);
-      token.content  = rowInfo.columns[i].trim();
-      token.map      = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
-      token.children = [];
+      appendRowToken(state, rowInfo.columns[i].trim(), lineNum, lineNum + rowInfo.extractedTextLinesCount);
 
       token          = state.push(rowType + '_close', rowType, -1);
     }
