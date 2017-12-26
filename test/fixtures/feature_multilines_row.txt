@@ -1,0 +1,32 @@
+# Support rows defined on several lines
+
+Requirement: A backslash at the end of a line indicates that in the cell below
+should be treated as in *the same row*
+
+.
+A       | B
+--------|-------
+text    | 1\
+over    | 2\
+several |\
+lines   |
+.
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>text
+over
+several
+lines</td>
+<td>1
+2</td>
+</tr>
+</tbody>
+</table>
+.

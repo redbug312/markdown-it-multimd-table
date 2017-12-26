@@ -32,3 +32,10 @@ describe('Issues', function () {
 
   generate(path.join(__dirname, 'fixtures/issues.txt'), md);
 });
+
+describe('Support rows defined on several lines', function () {
+  var md = require('markdown-it')()
+              .use(require('../'), { enableMultilineRows: true });
+
+  generate(path.join(__dirname, 'fixtures/feature_multilines_row.txt'), md);
+});
