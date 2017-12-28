@@ -6,9 +6,9 @@ should be treated as in *the same row*
 .
 A         | B
 ----------|-------
-text:     | 1\
-- over    | 2\
-- several |\
+text:     | 1     \
+- over    | 2     \
+- several |       \
 - lines   |
 .
 <table>
@@ -31,6 +31,34 @@ text:     | 1\
 <td>
 <p>1
 2</p>
+</td>
+</tr>
+</tbody>
+</table>
+.
+
+The colspan feature should still be usable.
+
+.
+A      | B
+-------|-------
+large  |\
+single |\
+row    ||
+.
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2">
+<p>large
+single
+row</p>
 </td>
 </tr>
 </tbody>

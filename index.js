@@ -54,7 +54,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     emptyCount = 0;
     colspans = [];
     for (i = columns.length - 1; i >= 0; i--) {
-      if (columns[i]) {
+      if (columns[i].trim()) {
         colspans.unshift(emptyCount + 1);
         emptyCount = 0;
       } else {
@@ -126,7 +126,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
       if (nextColumn.length === 1 && !/^\||[^\\]\|$/.test(nextLineText)) { return false; }
       if (nextColumn.length !== columns.length && nextColumn.length !== columns.length - 1) { return false; }
       for (i = 0; i < nextColumn.length; i++) {
-        columns[i] = columns[i].replace(/^\s+| +$/, '') + '\n' + nextColumn[i].trim();
+        columns[i] = columns[i].replace(/^\s+/, '').replace(/ +(\n*)$/, '$1') + '\n' + nextColumn[i].trim();
       }
       rowInfo.extractedTextLinesCount += 1;
     }
