@@ -111,7 +111,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType) {
-    var rowInfo, columns, nextLineText, nextColumn, token, i, col;
+    var rowInfo, columns, nextLineText, nextColumn, token, i, col, isValidColumn;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
 
     columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
