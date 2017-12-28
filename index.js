@@ -54,7 +54,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     emptyCount = 0;
     colspans = [];
     for (i = columns.length - 1; i >= 0; i--) {
-      if (columns[i].trim()) {
+      if (columns[i]) {
         colspans.unshift(emptyCount + 1);
         emptyCount = 0;
       } else {
@@ -126,13 +126,14 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
       if (nextColumn.length === 1 && !/^\||[^\\]\|$/.test(nextLineText)) { return false; }
       if (nextColumn.length !== columns.length && nextColumn.length !== columns.length - 1) { return false; }
       for (i = 0; i < nextColumn.length; i++) {
-        columns[i] = columns[i].replace(/^\s+/, '').replace(/ +(\n*)$/, '$1') + '\n' + nextColumn[i].trim();
+        columns[i] = columns[i].trim() + '\n' + nextColumn[i].trim();
       }
       rowInfo.extractedTextLinesCount += 1;
     }
 
-    rowInfo.columns = columns.filter(Boolean);
-    rowInfo.colspans = countColspan(columns);
+    isValidColumn = RegExp.prototype.test.bind(/[^\n]/); // = (s => /[^\n]/.test(s))
+    rowInfo.columns = columns.filter(isValidColumn);
+    rowInfo.colspans = countColspan(columns.map(isValidColumn));
 
     token     = state.push('tr_open', 'tr', 1);
     token.map = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
