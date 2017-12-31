@@ -88,7 +88,7 @@ You might see the table in browser:
 
 ### Multiple lines of row
 
-Allow table rows parsed as multiple lines with end-of-the-line backslashes.
+Allow table rows parsed as multiple lines with end-of-the-line backslashes, the feature is contributed by [Lucas-C](https://github.com/Lucas-C).
 
 ```markdown
 First header | Second header
