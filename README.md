@@ -39,12 +39,98 @@ const exampleTable =
 "Content       |   **Cell**    |         Cell | \n" +
 "                                               \n" +
 "New section   |     More      |         Data | \n" +
-"And more      | With an escaped '\|'         ||\n" +
+"And more      | With an escaped '\\|'        ||\n" +
 "[Prototype table]                              \n";
 console.log(md.render(exampleTable));
 
 $ node test.js > test.html
 $ firefox test.html
+```
+
+You might see the table in browser:
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center" colspan="2">Grouping</th>
+</tr>
+<tr>
+<th>First Header</th>
+<th style="text-align:center">Second Header</th>
+<th style="text-align:right">Third Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content</td>
+<td style="text-align:center" colspan="2"><em>Long Cell</em></td>
+</tr>
+<tr>
+<td>Content</td>
+<td style="text-align:center"><strong>Cell</strong></td>
+<td style="text-align:right">Cell</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td>New section</td>
+<td style="text-align:center">More</td>
+<td style="text-align:right">Data</td>
+</tr>
+<tr>
+<td>And more</td>
+<td style="text-align:center" colspan="2">With an escaped '|'</td>
+</tr>
+</tbody>
+<caption id="prototypetable">Prototype table</caption>
+</table>
+
+### Multiple lines of row
+
+Allow table rows parsed as multiple lines with end-of-the-line backslashes, the feature is contributed by [Lucas-C](https://github.com/Lucas-C).
+
+```markdown
+First header | Second header
+-------------|---------------
+List:        | More  \
+- over       | data  \
+- several    |       \
+- lines      |
+```
+
+would be parsed as
+
+<table>
+<thead>
+<tr>
+<th>First header</th>
+<th>Second header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<p>List:</p>
+<ul>
+<li>over</li>
+<li>several</li>
+<li>lines</li>
+</ul>
+</td>
+<td>
+<p>More
+data</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+To enable this feature, you have to set the option:
+
+```javascript
+var md = require('markdown-it')()
+              .use(require('markdown-it-multimd-table'), {enableMultilineRows: true});
 ```
 
 ## Credits
