@@ -25,7 +25,7 @@ md.render(/*...*/)
 ```
 
 For test, do this in terminal:
-```bash
+```javascript
 $ npm install markdown-it-multimd-table --prefix .
 $ vim test.js
 
