@@ -47,6 +47,53 @@ $ node test.js > test.html
 $ firefox test.html
 ```
 
+### Multiple lines of row
+
+Allow table rows parsed as multiple lines with end-of-the-line backslashes.
+
+```markdown
+A         | B
+----------|-------
+text:     | 1     \
+- over    | 2     \
+- several |       \
+- lines   |
+```
+
+would be parsed as
+
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<p>text:</p>
+<ul>
+<li>over</li>
+<li>several</li>
+<li>lines</li>
+</ul>
+</td>
+<td>
+<p>1
+2</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+To enable this feature, you have to set the option:
+
+```javascript
+var md = require('markdown-it')()
+              .use(require('markdown-it-multimd-table'), {enableMultilineRows: true});
+```
+
 ## Credits
 * [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight markup processor to produce HTML, LaTeX, and more.
 * [markdown-it](https://markdown-it.github.io/), Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins & high speed
