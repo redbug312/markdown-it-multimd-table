@@ -21,10 +21,12 @@ test: lint
 
 coverage:
 	rm -rf coverage
-	${MODULE_PATH}/istanbul cover node_modules/.bin/_mocha
+	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/.bin/_mocha
 
 test-ci: lint
-	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ${MODULE_PATH}/coveralls && rm -rf ./coverage
+	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha --report lcovonly -- -R spec
+	cat ./coverage/lcov.info | ${MODULE_PATH}/coveralls
+	rm -rf ./coverage
 
 browserify:
 	rm -rf ./dist
