@@ -91,12 +91,12 @@ You might see the table in browser:
 Allow table rows parsed as multiple lines with end-of-the-line backslashes.
 
 ```markdown
-A         | B
-----------|-------
-text:     | 1     \
-- over    | 2     \
-- several |       \
-- lines   |
+First header | Second header
+-------------|---------------
+List:        | More  \
+- over       | data  \
+- several    |       \
+- lines      |
 ```
 
 would be parsed as
@@ -104,14 +104,14 @@ would be parsed as
 <table>
 <thead>
 <tr>
-<th>A</th>
-<th>B</th>
+<th>First header</th>
+<th>Second header</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>
-<p>text:</p>
+<p>List:</p>
 <ul>
 <li>over</li>
 <li>several</li>
@@ -119,8 +119,8 @@ would be parsed as
 </ul>
 </td>
 <td>
-<p>1
-2</p>
+<p>More
+data</p>
 </td>
 </tr>
 </tbody>
