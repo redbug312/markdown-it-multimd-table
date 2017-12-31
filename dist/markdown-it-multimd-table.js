@@ -1,7 +1,9 @@
-/*! markdown-it-multimd-table 3.0.0 https://github.com//markdown-it/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitDeflist = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 3.1.0 https://github.com//markdown-it/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitDeflist = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-module.exports = function multimd_table_plugin(md) {
+module.exports = function multimd_table_plugin(md, pluginOptions) {
+  pluginOptions = pluginOptions || {};
+
   function getLine(state, line) {
     var pos = state.bMarks[line] + state.blkIndent,
         max = state.eMarks[line];
@@ -92,51 +94,78 @@ module.exports = function multimd_table_plugin(md) {
     return captionInfo;
   }
 
-  function tableRow(state, lineText, lineNum, silent, seperatorInfo, rowType) {
-    var rowInfo, columns, token, i, col;
+  function appendRowToken(state, content, startLine, endLine) {
+    var linesCount, blockParser, tmpState, token;
+    linesCount = content.split(/\n/).length;
+
+    if (linesCount > 1) {
+      // Multiline content => subparsing as a block to support lists
+      blockParser = state.md.block;
+      tmpState = new blockParser.State(content, state.md, state.env, state.tokens);
+      blockParser.tokenize(tmpState, 0, linesCount); // appends to state.tokens
+    } else {
+      token          = state.push('inline', '', 0);
+      token.content  = content;
+      token.map      = [ startLine, endLine ];
+      token.children = [];
+    }
+  }
+
+  function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType) {
+    var rowInfo, columns, nextLineText, nextColumn, token, i, col, isValidColumn;
+    rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
 
     columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
     // lineText does not contain valid pipe character
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
     if (silent) { return true; }
 
-    rowInfo = { colspans: null, columns: null };
-    rowInfo.columns = columns.filter(Boolean);
-    rowInfo.colspans = countColspan(columns);
+    while (pluginOptions.enableMultilineRows && columns[columns.length - 1].slice(-1) === '\\') {
+      columns[columns.length - 1] = columns[columns.length - 1].slice(0, -1);
+      nextLineText = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
+      nextColumn = escapedSplit(nextLineText.replace(/^\||([^\\])\|$/g, '$1'));
+      if (nextColumn.length === 1 && !/^\||[^\\]\|$/.test(nextLineText)) { return false; }
+      if (nextColumn.length !== columns.length && nextColumn.length !== columns.length - 1) { return false; }
+      for (i = 0; i < nextColumn.length; i++) {
+        columns[i] = columns[i].trim() + '\n' + nextColumn[i].trim();
+      }
+      rowInfo.extractedTextLinesCount += 1;
+    }
+
+    isValidColumn = RegExp.prototype.test.bind(/[^\n]/); // = (s => /[^\n]/.test(s))
+    rowInfo.columns = columns.filter(isValidColumn);
+    rowInfo.colspans = countColspan(columns.map(isValidColumn));
 
     token     = state.push('tr_open', 'tr', 1);
-    token.map = [ lineNum, lineNum + 1 ];
+    token.map = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
 
-    for (i = 0, col = 0; i < rowInfo.columns.length && col < seperatorInfo.aligns.length;
+    for (i = 0, col = 0; i < rowInfo.columns.length && col < separatorInfo.aligns.length;
                          col += rowInfo.colspans[i], i++) {
       token          = state.push(rowType + '_open', rowType, 1);
-      token.map      = [ lineNum, lineNum + 1 ];
+      token.map      = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
       token.attrs    = [];
-      if (seperatorInfo.aligns[col]) {
-        token.attrs.push([ 'style', 'text-align:' + seperatorInfo.aligns[col] ]);
+      if (separatorInfo.aligns[col]) {
+        token.attrs.push([ 'style', 'text-align:' + separatorInfo.aligns[col] ]);
       }
-      if (seperatorInfo.wraps[col]) {
+      if (separatorInfo.wraps[col]) {
         token.attrs.push([ 'class', 'extend' ]);
       }
       if (rowInfo.colspans[i] > 1) {
         token.attrs.push([ 'colspan', rowInfo.colspans[i] ]);
       }
 
-      token          = state.push('inline', '', 0);
-      token.content  = rowInfo.columns[i].trim();
-      token.map      = [ lineNum, lineNum + 1 ];
-      token.children = [];
+      appendRowToken(state, rowInfo.columns[i].trim(), lineNum, lineNum + rowInfo.extractedTextLinesCount);
 
       token          = state.push(rowType + '_close', rowType, -1);
     }
 
-    token     = state.push('tr_close', 'tr', -1);
+    state.push('tr_close', 'tr', -1);
 
     return rowInfo;
   }
 
-  function seperator(state, lineText, lineNum, silent) {
-    var columns, seperatorInfo, i, t;
+  function separator(state, lineText, lineNum, silent) {
+    var columns, separatorInfo, i, t;
 
     // lineText have code indentation
     if (state.sCount[lineNum] - state.blkIndent >= 4) { return false; }
@@ -145,35 +174,35 @@ module.exports = function multimd_table_plugin(md) {
     columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
 
-    seperatorInfo = { aligns: [], wraps: [] };
+    separatorInfo = { aligns: [], wraps: [] };
 
     for (i = 0; i < columns.length; i++) {
       t = columns[i].trim();
       if (!/^:?(-+|=+):?\+?$/.test(t)) { return false; }
 
-      seperatorInfo.wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
-      if (seperatorInfo.wraps[i]) {
+      separatorInfo.wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
+      if (separatorInfo.wraps[i]) {
         t = t.slice(0, -1);
       }
 
       switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
                (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
-        case 0x00: seperatorInfo.aligns.push('');       break;
-        case 0x01: seperatorInfo.aligns.push('right');  break;
-        case 0x10: seperatorInfo.aligns.push('left');   break;
-        case 0x11: seperatorInfo.aligns.push('center'); break;
+        case 0x00: separatorInfo.aligns.push('');       break;
+        case 0x01: separatorInfo.aligns.push('right');  break;
+        case 0x10: separatorInfo.aligns.push('left');   break;
+        case 0x11: separatorInfo.aligns.push('center'); break;
       }
     }
 
-    return silent || seperatorInfo;
+    return silent || separatorInfo;
   }
 
   function table(state, startLine, endLine, silent) {
     /* Regex pseudo code for table:
-     * caption? tableRow+ seperator (tableRow+ | empty)* caption?
+     * caption? tableRow+ separator (tableRow+ | empty)* caption?
      */
-    var seperatorLine, captionAtFirst, captionAtLast, lineText, nextLine,
-        seperatorInfo, token, tableLines, tbodyLines, emptyTBody;
+    var separatorLine, captionAtFirst, captionAtLast, lineText, nextLine,
+        rowInfo, separatorInfo, token, tableLines, tbodyLines, emptyTBody;
 
     if (startLine + 2 > endLine) { return false; }
 
@@ -187,26 +216,24 @@ module.exports = function multimd_table_plugin(md) {
       return false;
     }
 
-    // second line ~ seperator line
+    // second line ~ separator line
     for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
       lineText = getLine(state, nextLine).trim();
 
-      if (seperator(state, lineText, nextLine, true)) {
-        seperatorLine = nextLine;
+      if (separator(state, lineText, nextLine, true)) {
+        separatorLine = nextLine;
         break;
-      } else if (tableRow(state, lineText, nextLine, true, null, 'th')) {
-        continue;
-      } else {
+      } else if (!tableRow(state, lineText, nextLine, true, null, 'th')) {
         return false;
       }
     }
-    if (!seperatorLine) { return false; }
+    if (!separatorLine) { return false; }
     if (silent) { return true; }
 
     token = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
 
-    seperatorInfo = seperator(state, lineText, seperatorLine, false);
+    separatorInfo = separator(state, lineText, separatorLine, false);
 
     if (captionAtFirst) {
       lineText = getLine(state, startLine).trim();
@@ -214,35 +241,43 @@ module.exports = function multimd_table_plugin(md) {
     }
 
     token     = state.push('thead_open', 'thead', 1);
-    token.map = [ startLine + captionAtFirst, seperatorLine ];
+    token.map = [ startLine + captionAtFirst, separatorLine ];
 
-    for (nextLine = startLine + captionAtFirst; nextLine < seperatorLine; nextLine++) {
+    nextLine = startLine + captionAtFirst;
+    while (nextLine < separatorLine) {
       lineText = getLine(state, nextLine).trim();
-      tableRow(state, lineText, nextLine, false, seperatorInfo, 'th');
+      rowInfo = tableRow(state, lineText, nextLine, false, separatorInfo, 'th');
+      nextLine += rowInfo.extractedTextLinesCount;
     }
 
     token     = state.push('thead_close', 'thead', -1);
 
     token     = state.push('tbody_open', 'tbody', 1);
-    token.map = tbodyLines = [ seperatorLine + 1, 0 ];
+    token.map = tbodyLines = [ separatorLine + 1, 0 ];
     emptyTBody = true;
 
-    for (nextLine = seperatorLine + 1; nextLine < endLine; nextLine++) {
+    nextLine = separatorLine + 1;
+    while (nextLine < endLine) {
       lineText = getLine(state, nextLine).trim();
 
       if (!captionAtFirst && caption(state, lineText, nextLine, true)) {
         captionAtLast = true;
         break;
-      } else if (tableRow(state, lineText, nextLine, false, seperatorInfo, 'td')) {
-        emptyTBody = false;
-      } else if (!emptyTBody && !lineText) {
-        tbodyLines[1] = nextLine - 1;
-        token     = state.push('tbody_close', 'tbody', -1);
-        token     = state.push('tbody_open', 'tbody', 1);
-        token.map = tbodyLines = [ nextLine + 1, 0 ];
-        emptyTBody = true;
       } else {
-        break;
+        rowInfo = tableRow(state, lineText, nextLine, false, separatorInfo, 'td');
+        if (rowInfo) {
+          emptyTBody = false;
+          nextLine += rowInfo.extractedTextLinesCount;
+        } else if (!emptyTBody && !lineText) {
+          tbodyLines[1] = nextLine - 1;
+          token     = state.push('tbody_close', 'tbody', -1);
+          token     = state.push('tbody_open', 'tbody', 1);
+          token.map = tbodyLines = [ nextLine + 1, 0 ];
+          emptyTBody = true;
+          nextLine += 1;
+        } else {
+          break;
+        }
       }
     }
     token = state.push('tbody_close', 'tbody', -1);
