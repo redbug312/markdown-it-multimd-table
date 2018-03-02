@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-multimd-table",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Multimarkdown table syntax plugin for markdown-it markdown parser",
   "keywords": [
     "markdown-it-plugin",
@@ -32,7 +32,6 @@
     "eslint": "^3.19.0",
     "eslint-plugin-nodeca": "^1.0.0",
     "istanbul": "*",
-    "markdown-it": "^5.0.3",
     "markdown-it-testgen": "~0.1.0",
     "mocha": "*",
     "uglify-js": "^2.7.3"

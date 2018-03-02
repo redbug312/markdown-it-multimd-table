@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 3.1.0 https://github.com//markdown-it/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitDeflist = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 3.1.1 https://github.com//markdown-it/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitDeflist = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 'use strict';
 
 module.exports = function multimd_table_plugin(md, pluginOptions) {
@@ -199,103 +199,133 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
 
   function table(state, startLine, endLine, silent) {
     /* Regex pseudo code for table:
-     * caption? tableRow+ separator (tableRow+ | empty)* caption?
+     * caption? header+ separator (data+ empty)* data+ caption?
+     *
+     * We use NFA with precedences to emulate this plugin.
+     * Noted that separator should have higher precedence than header or data.
+     *   |  state  | caption separator header data empty | --> lower precedence
+     *   | 0x10100 |    1        0       1     0     0   |
      */
-    var separatorLine, captionAtFirst, captionAtLast, lineText, nextLine,
-        rowInfo, separatorInfo, token, tableLines, tbodyLines, emptyTBody;
 
+    var match = {
+      0x10000: function (s, l, lt) { return caption(s, lt, l, true); },
+      0x01000: function (s, l, lt) { return separator(s, lt, l); },
+      0x00100: function (s, l, lt) { return tableRow(s, lt, l, true, null, 'th'); },
+      0x00010: function (s, l, lt) { return tableRow(s, lt, l, true, null, 'td'); },
+      0x00001: function (s, l, lt) { return !lt; }
+    };
+    var transitions = {
+      0x10100: { 0x10000: 0x00100, 0x00100: 0x01100 },
+      0x00100: { 0x00100: 0x01100 },
+      0x01100: { 0x01000: 0x10010, 0x00100: 0x01100 },
+      0x10010: { 0x10000: 0x00000, 0x00010: 0x10011 },
+      0x10011: { 0x10000: 0x00000, 0x00010: 0x10011, 0x00001: 0x10010 }
+    };
+
+    /* Check validity; Gather separator informations */
     if (startLine + 2 > endLine) { return false; }
 
-    captionAtFirst = captionAtLast = false;
+    var NFAstate, line, tryMatch, rowInfo, lineText, separatorInfo;
+    var captionAtFirst = false;
 
-    // first line
-    lineText = getLine(state, startLine).trim();
-    if (caption(state, lineText, startLine, true)) {
-      captionAtFirst = true;
-    } else if (!tableRow(state, lineText, startLine, true, null, 'tr')) {
-      return false;
-    }
+    for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
+      lineText = getLine(state, line).trim();
 
-    // second line ~ separator line
-    for (nextLine = startLine + 1; nextLine < endLine; nextLine++) {
-      lineText = getLine(state, nextLine).trim();
-
-      if (separator(state, lineText, nextLine, true)) {
-        separatorLine = nextLine;
-        break;
-      } else if (!tableRow(state, lineText, nextLine, true, null, 'th')) {
-        return false;
+      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 1) {
+        if (NFAstate & tryMatch && match[tryMatch].call(this, state, line, lineText)) { break; }
       }
+
+      switch (tryMatch) {
+        case 0x10000:
+          if (NFAstate === 0x10100) { captionAtFirst = true; }
+          break;
+        case 0x01000:
+          separatorInfo = separator(state, lineText, line);
+          if (silent) { return true; }
+          break;
+        case 0x00100:
+        case 0x00010:
+        case 0x00001:
+          break;
+        case 0x00000:
+          if (NFAstate & 0x00100) { return false; } // separator not reached
+      }
+
+      NFAstate = transitions[NFAstate][tryMatch] || 0x00000;
     }
-    if (!separatorLine) { return false; }
-    if (silent) { return true; }
+
+    if (!separatorInfo) { return false; }
+
+    /* Generate table HTML */
+    var token, tableLines, theadLines, tbodyLines;
 
     token = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
 
-    separatorInfo = separator(state, lineText, separatorLine, false);
+    for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
+      lineText = getLine(state, line).trim();
 
-    if (captionAtFirst) {
-      lineText = getLine(state, startLine).trim();
-      caption(state, lineText, startLine, false);
-    }
-
-    token     = state.push('thead_open', 'thead', 1);
-    token.map = [ startLine + captionAtFirst, separatorLine ];
-
-    nextLine = startLine + captionAtFirst;
-    while (nextLine < separatorLine) {
-      lineText = getLine(state, nextLine).trim();
-      rowInfo = tableRow(state, lineText, nextLine, false, separatorInfo, 'th');
-      nextLine += rowInfo.extractedTextLinesCount;
-    }
-
-    token     = state.push('thead_close', 'thead', -1);
-
-    token     = state.push('tbody_open', 'tbody', 1);
-    token.map = tbodyLines = [ separatorLine + 1, 0 ];
-    emptyTBody = true;
-
-    nextLine = separatorLine + 1;
-    while (nextLine < endLine) {
-      lineText = getLine(state, nextLine).trim();
-
-      if (!captionAtFirst && caption(state, lineText, nextLine, true)) {
-        captionAtLast = true;
-        break;
-      } else {
-        rowInfo = tableRow(state, lineText, nextLine, false, separatorInfo, 'td');
-        if (rowInfo) {
-          emptyTBody = false;
-          nextLine += rowInfo.extractedTextLinesCount;
-        } else if (!emptyTBody && !lineText) {
-          tbodyLines[1] = nextLine - 1;
-          token     = state.push('tbody_close', 'tbody', -1);
-          token     = state.push('tbody_open', 'tbody', 1);
-          token.map = tbodyLines = [ nextLine + 1, 0 ];
-          emptyTBody = true;
-          nextLine += 1;
-        } else {
-          break;
-        }
+      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 1) {
+        if (NFAstate & tryMatch && match[tryMatch].call(this, state, line, lineText)) { break; }
       }
-    }
-    token = state.push('tbody_close', 'tbody', -1);
 
-    if (captionAtLast) {
-      caption(state, lineText, nextLine, false);
-      nextLine++;
+      switch (tryMatch) {
+        case 0x10000:
+          if (NFAstate !== 0x10100) { // the last line in table
+            tbodyLines[1] = line;
+            token = state.push('tbody_close', 'tbody', -1);
+          }
+          if (NFAstate === 0x10100 || !captionAtFirst) {
+            caption(state, lineText, line, false);
+          } else {
+            line--;
+          }
+          break;
+        case 0x01000:
+          theadLines[1] = line;
+          token         = state.push('thead_close', 'thead', -1);
+          break;
+        case 0x00100:
+          if (NFAstate !== 0x01100) { // the first line in thead
+            token     = state.push('thead_open', 'thead', 1);
+            token.map = theadLines = [ line + 1, 0 ];
+          }
+          rowInfo = tableRow(state, lineText, line, false, separatorInfo, 'th');
+          line   += rowInfo.extractedTextLinesCount - 1;
+          break;
+        case 0x00010:
+          if (NFAstate !== 0x10011) { // the first line in tbody
+            token     = state.push('tbody_open', 'tbody', 1);
+            token.map = tbodyLines = [ line + 1, 0 ];
+          }
+          rowInfo = tableRow(state, lineText, line, false, separatorInfo, 'td');
+          line   += rowInfo.extractedTextLinesCount - 1;
+          break;
+        case 0x00001:
+          tbodyLines[1] = line;
+          token         = state.push('tbody_close', 'tbody', -1);
+          break;
+        case 0x00000:
+          line--;
+          break;
+      }
+
+      NFAstate = transitions[NFAstate][tryMatch] || 0x00000;
     }
 
+    if (tbodyLines && !tbodyLines[1]) { // Corner case: table without tbody or EOL
+      tbodyLines[1] = line;
+      token         = state.push('tbody_close', 'tbody', -1);
+    }
+
+    tableLines[1] = line;
     token = state.push('table_close', 'table', -1);
 
-    tableLines[1] = tbodyLines[1] = nextLine;
-    state.line = nextLine;
+    state.line = line;
     return true;
   }
 
   md.block.ruler.at('table', table, { alt: [ 'paragraph', 'reference' ] });
-
 };
 
 /* vim: set ts=2 sw=2 et: */
