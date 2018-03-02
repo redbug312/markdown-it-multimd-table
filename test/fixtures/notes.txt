@@ -389,7 +389,6 @@ And more      | With an escaped '\|'         ||
 <th style="text-align:right">Third Header</th>
 </tr>
 </thead>
-<tbody></tbody>
 </table>
 <p>Content       |          <em>Long Cell</em>        ||
 Content       |   <strong>Cell</strong>    |         Cell |</p>
