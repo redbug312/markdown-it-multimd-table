@@ -33,7 +33,7 @@ browserify:
 	mkdir dist
 	# Browserify
 	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" ; \
-		${MODULE_PATH}/browserify ./ -s markdownitDeflist \
+		${MODULE_PATH}/browserify ./ -s markdownitMultimdTable \
 		) > dist/markdown-it-multimd-table.js
 	# Minify
 	${MODULE_PATH}/uglifyjs dist/markdown-it-multimd-table.js -b beautify=false,ascii-only=true -c -m \
