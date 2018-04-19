@@ -2,19 +2,20 @@
 [![Build Status](https://travis-ci.org/RedBug312/markdown-it-multimd-table.svg?branch=master)](https://travis-ci.org/RedBug312/markdown-it-multimd-table)
 [![Coverage Status](https://coveralls.io/repos/github/RedBug312/markdown-it-multimd-table/badge.svg?branch=master)](https://coveralls.io/github/RedBug312/markdown-it-multimd-table?branch=master)
 
-Multimarkdown table syntax plugin for markdown-it markdown parser 
+MultiMarkdown table syntax plugin for markdown-it markdown parser
 
 ## Intro
-Bored with HTML table tags when I need some extended table functions like `colspan` in Markdown. I found that [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/) had defined complete and clear rules for advanced table syntax, which is compatible to standard Markdown table syntax at the same time.
+In general Markdown syntax, we have to write raw HTML tags when `colspan` attribute is needed. Luckily, I found that [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/) had defined complete and clear rules for advanced Markdown table syntax, and compatible to general Markdown table syntax.
 
-For example, the following features are given:
-* `colspan` attribute
-* Multiple `<thead>` and `<tbody>`
-* Captions
+So I extend the table parser in markdown-it to support MultiMarkdown table syntax. For now, the following features are provided:
+- Cells spanning multiple columns
+- Grouped table headers
+- Grouped table rows
+- Table captions
+- Lists in table cell (optional)
+- Line breaks in table cells (optional)
 
-So I altered the table parser in markdown-it for the Multimarkdown syntax.
-
-NOTE: This plugin might behave differently from MultiMarkdown for some edging cases; For this plugin was developed mainly under the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables). Please impose an issue if you find problems related.
+Noted that the plugin might behave differently from MultiMarkdown in some edge cases; since the plugin was developed to follow the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables).
 
 ## Usage
 ```javascript
@@ -24,30 +25,34 @@ var md = require('markdown-it')()
 md.render(/*...*/)
 ```
 
-For test, do this in terminal:
+To simply test this plugin, you can do these in terminal:
 ```javascript
+$ mkdir markdown-it-multimd-table
+$ cd markdown-it-multimd-table
 $ npm install markdown-it-multimd-table --prefix .
 $ vim test.js
 
-var md = require('markdown-it')()
-            .use(require('markdown-it-multimd-table'));
-const exampleTable =
-"|             |          Grouping           || \n" +
-"First Header  | Second Header | Third Header | \n" +
-" ------------ | :-----------: | -----------: | \n" +
-"Content       |          *Long Cell*        || \n" +
-"Content       |   **Cell**    |         Cell | \n" +
-"                                               \n" +
-"New section   |     More      |         Data | \n" +
-"And more      | With an escaped '\|'         ||\n" +
-"[Prototype table]                              \n";
-console.log(md.render(exampleTable));
+    var md = require('markdown-it')()
+                .use(require('markdown-it-multimd-table'));
+
+    const exampleTable =
+    "|             |          Grouping           || \n" +
+    "First Header  | Second Header | Third Header | \n" +
+    " ------------ | :-----------: | -----------: | \n" +
+    "Content       |          *Long Cell*        || \n" +
+    "Content       |   **Cell**    |         Cell | \n" +
+    "                                               \n" +
+    "New section   |     More      |         Data | \n" +
+    "And more      | With an escaped '\\|'       || \n" +
+    "[Prototype table]                              \n";
+
+    console.log(md.render(exampleTable));
 
 $ node test.js > test.html
 $ firefox test.html
 ```
 
-You might see the table in browser:
+And you will see the rendered table in the browser:
 
 <table>
 <thead>
@@ -86,9 +91,10 @@ You might see the table in browser:
 <caption id="prototypetable">Prototype table</caption>
 </table>
 
-### Multiple lines of row
+### Multiple lines of row (optional)
 
-Allow table rows parsed as multiple lines with end-of-the-line backslashes, the feature is contributed by [Lucas-C](https://github.com/Lucas-C).
+Put backslashes to indicate line-breaks to allow the table rows being parsed in multiple rows.
+This feature is contributed by [Lucas-C](https://github.com/Lucas-C).
 
 ```markdown
 First header | Second header
@@ -126,16 +132,16 @@ data</p>
 </tbody>
 </table>
 
-To enable this feature, you have to set the option:
+Here's how you can enable the feature.
 
 ```javascript
 var md = require('markdown-it')()
-              .use(require('markdown-it-multimd-table'), {enableMultilineRows: true});
+            .use(require('markdown-it-multimd-table'), {enableMultilineRows: true});
 ```
 
 ## Credits
 * [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight markup processor to produce HTML, LaTeX, and more.
-* [markdown-it](https://markdown-it.github.io/), Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins & high speed
+* [markdown-it](https://markdown-it.github.io/), Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins & high speed.
 
 ## License
 This software is licensed under the [MIT license](https://opensource.org/licenses/mit-license.php) © RedBug312.
