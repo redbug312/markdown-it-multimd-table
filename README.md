@@ -15,7 +15,7 @@ So I extend the table parser in markdown-it to support MultiMarkdown table synta
 - Lists in table cell (optional)
 - Line breaks in table cells (optional)
 
-Noted that the plugin might behave differently from MultiMarkdown in some edge cases; since the plugin was developed to follow the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables).
+Noted that the plugin might behave differently from MultiMarkdown in some edge cases; since the plugin aims just to follow the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables).
 
 ## Usage
 ```javascript
@@ -93,7 +93,7 @@ And you will see the rendered table in the browser:
 
 ### Multiple lines of row (optional)
 
-Put backslashes to indicate line-breaks to allow the table rows being parsed in multiple rows.
+Put backslashes at end to make the table rows parsed as multiple lines.
 This feature is contributed by [Lucas-C](https://github.com/Lucas-C).
 
 ```markdown
@@ -132,7 +132,7 @@ data</p>
 </tbody>
 </table>
 
-Here's how you can enable the feature.
+And here's how you enable the feature.
 
 ```javascript
 var md = require('markdown-it')()
