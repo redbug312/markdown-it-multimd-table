@@ -11,26 +11,25 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
 
   function escapedSplit(str) {
     var result = [],
-      pos = 0,
-      max = str.length,
-      lastPos = 0,
-      escaped = false,
-      backTicked = false;
+        max = str.length,
+        lastPos = 0,
+        escaped = false,
+        backTicked = false;
 
-    for (pos = 0; pos < max; pos++) {
+    for (var pos = 0; pos < max; pos++) {
       switch (str.charCodeAt(pos)) {
-        case 0x5c/* \ */:
+        case 0x5c /* \ */:
           escaped = true;
           break;
-        case 0x60/* ` */:
+        case 0x60 /* ` */:
           if (backTicked || !escaped) {
-            // make \` close code sequence, but not open it;
-            // the reason is: `\` is correct code block
+            /* make \` closes the code sequence, but not open it;
+               the reason is that `\` is correct code block */
             backTicked = !backTicked;
           }
           escaped = false;
           break;
-        case 0x7c/* | */:
+        case 0x7c /* | */:
           if (!backTicked && !escaped) {
             result.push(str.slice(lastPos, pos));
             lastPos = pos + 1;
@@ -49,11 +48,10 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function countColspan(columns) {
-    var i, emptyCount, colspans;
+    var emptyCount = 0,
+        colspans = [];
 
-    emptyCount = 0;
-    colspans = [];
-    for (i = columns.length - 1; i >= 0; i--) {
+    for (var i = columns.length - 1; i >= 0; i--) {
       if (columns[i]) {
         colspans.unshift(emptyCount + 1);
         emptyCount = 0;
@@ -69,16 +67,15 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function caption(state, lineText, lineNum, silent) {
-    var captionInfo, result, token;
-
-    result = lineText.match(/^\[([^[\]]+)\](\[([^[\]]+)\])?\s*$/);
+    var result = lineText.match(/^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/);
     if (!result) { return false; }
     if (silent)  { return true; }
 
-    captionInfo = { caption: null, label: null };
+    var captionInfo = { caption: null, label: null };
     captionInfo.content = result[1];
     captionInfo.label = result[2] || result[1];
 
+    var token;
     token          = state.push('caption_open', 'caption', 1);
     token.map      = [ lineNum, lineNum + 1 ];
     token.attrs    = [ [ 'id', captionInfo.label.toLowerCase().replace(/\W+/g, '') ] ];
@@ -111,35 +108,47 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType) {
-    var rowInfo, columns, nextLineText, nextColumn, token, i, col, isValidColumn;
+    var rowInfo, columns;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
-
     columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
+
     // lineText does not contain valid pipe character
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
     if (silent) { return true; }
 
-    while (pluginOptions.enableMultilineRows && columns[columns.length - 1].slice(-1) === '\\') {
-      columns[columns.length - 1] = columns[columns.length - 1].slice(0, -1);
-      nextLineText = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
-      nextColumn = escapedSplit(nextLineText.replace(/^\||([^\\])\|$/g, '$1'));
-      if (nextColumn.length === 1 && !/^\||[^\\]\|$/.test(nextLineText)) { return false; }
-      if (nextColumn.length !== columns.length && nextColumn.length !== columns.length - 1) { return false; }
-      for (i = 0; i < nextColumn.length; i++) {
-        columns[i] = columns[i].trim() + '\n' + nextColumn[i].trim();
-      }
-      rowInfo.extractedTextLinesCount += 1;
+    // Multiline feature
+    if (pluginOptions.enableMultilineRows && lineText.slice(-1) === '\\') {
+      var lineTextNext, columnsNext, EndOfMultilines;
+      var trimItself = Function.prototype.call.bind(String.prototype.trim); // equal to (x => x.trim())
+      columns = escapedSplit(lineText.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
+      columns = columns.map(trimItself);
+      do {
+        lineTextNext = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
+        columnsNext = escapedSplit(lineTextNext.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
+        EndOfMultilines = lineTextNext.slice(-1) !== '\\';
+
+        if (columnsNext.length === 1 && !/^\||[^\\]\|$|\\$/.test(lineTextNext)) { return false; }
+        if (columnsNext.length !== columns.length && !EndOfMultilines) { return false; }
+
+        for (var j = 0; j < columnsNext.length; j++) {
+          columns[j] = columns[j] || '';
+          columns[j] += '\n' + columnsNext[j].trim();
+        }
+        rowInfo.extractedTextLinesCount += 1;
+
+      } while (!EndOfMultilines);
     }
 
-    isValidColumn = RegExp.prototype.test.bind(/[^\n]/); // = (s => /[^\n]/.test(s))
+    // Fill in HTML <tr> elements
+    var isValidColumn = RegExp.prototype.test.bind(/[^\n]/); // equal to (s => /[^\n]/.test(s))
     rowInfo.columns = columns.filter(isValidColumn);
     rowInfo.colspans = countColspan(columns.map(isValidColumn));
 
-    token     = state.push('tr_open', 'tr', 1);
+    var token = state.push('tr_open', 'tr', 1);
     token.map = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
 
-    for (i = 0, col = 0; i < rowInfo.columns.length && col < separatorInfo.aligns.length;
-                         col += rowInfo.colspans[i], i++) {
+    for (var i = 0, col = 0; i < rowInfo.columns.length && col < separatorInfo.aligns.length;
+                             col += rowInfo.colspans[i], i++) {
       token          = state.push(rowType + '_open', rowType, 1);
       token.map      = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
       token.attrs    = [];
@@ -164,19 +173,17 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function separator(state, lineText, lineNum, silent) {
-    var columns, separatorInfo, i, t;
-
     // lineText have code indentation
     if (state.sCount[lineNum] - state.blkIndent >= 4) { return false; }
 
     // lineText does not contain valid pipe character
-    columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
+    var columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
 
-    separatorInfo = { aligns: [], wraps: [] };
+    var separatorInfo = { aligns: [], wraps: [] };
 
-    for (i = 0; i < columns.length; i++) {
-      t = columns[i].trim();
+    for (var i = 0; i < columns.length; i++) {
+      var t = columns[i].trim();
       if (!/^:?(-+|=+):?\+?$/.test(t)) { return false; }
 
       separatorInfo.wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
@@ -184,8 +191,8 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
         t = t.slice(0, -1);
       }
 
-      switch (((t.charCodeAt(0)            === 0x3A/* : */) << 4) +
-               (t.charCodeAt(t.length - 1) === 0x3A/* : */)) {
+      switch (((t.charCodeAt(0)            === 0x3A /* : */) << 4) +
+               (t.charCodeAt(t.length - 1) === 0x3A /* : */)) {
         case 0x00: separatorInfo.aligns.push('');       break;
         case 0x01: separatorInfo.aligns.push('right');  break;
         case 0x10: separatorInfo.aligns.push('left');   break;
@@ -224,17 +231,17 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     /* Check validity; Gather separator informations */
     if (startLine + 2 > endLine) { return false; }
 
-    var NFAstate, line, tryMatch, rowInfo, lineText, separatorInfo;
+    var NFAstate, line, candidate, rowInfo, lineText, separatorInfo;
     var captionAtFirst = false;
 
     for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
       lineText = getLine(state, line).trim();
 
-      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 1) {
-        if (NFAstate & tryMatch && match[tryMatch].call(this, state, line, lineText)) { break; }
+      for (candidate = 0x10000; candidate > 0; candidate >>= 4) {
+        if (NFAstate & candidate && match[candidate].call(this, state, line, lineText)) { break; }
       }
 
-      switch (tryMatch) {
+      switch (candidate) {
         case 0x10000:
           if (NFAstate === 0x10100) { captionAtFirst = true; }
           break;
@@ -250,7 +257,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
           if (NFAstate & 0x00100) { return false; } // separator not reached
       }
 
-      NFAstate = transitions[NFAstate][tryMatch] || 0x00000;
+      NFAstate = transitions[NFAstate][candidate] || 0x00000;
     }
 
     if (!separatorInfo) { return false; }
@@ -264,11 +271,11 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
       lineText = getLine(state, line).trim();
 
-      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 1) {
-        if (NFAstate & tryMatch && match[tryMatch].call(this, state, line, lineText)) { break; }
+      for (candidate = 0x10000; candidate > 0; candidate >>= 4) {
+        if (NFAstate & candidate && match[candidate].call(this, state, line, lineText)) { break; }
       }
 
-      switch (tryMatch) {
+      switch (candidate) {
         case 0x10000:
           if (NFAstate !== 0x10100) { // the last line in table
             tbodyLines[1] = line;
@@ -309,7 +316,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
           break;
       }
 
-      NFAstate = transitions[NFAstate][tryMatch] || 0x00000;
+      NFAstate = transitions[NFAstate][candidate] || 0x00000;
     }
 
     if (tbodyLines && !tbodyLines[1]) { // Corner case: table without tbody or EOL

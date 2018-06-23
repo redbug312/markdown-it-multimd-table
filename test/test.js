@@ -1,41 +1,35 @@
 'use strict';
-
 var path     = require('path');
 var generate = require('markdown-it-testgen');
 
 /* eslint-env mocha */
 
-describe('Basic', function () {
+describe('Basic', function() {
   var md = require('markdown-it')()
               .use(require('../'));
-
   generate(path.join(__dirname, 'fixtures/basic.txt'), md);
 });
 
-describe('Requirements', function () {
+describe('Requirements', function() {
   var md = require('markdown-it')()
               .use(require('../'));
-
   generate(path.join(__dirname, 'fixtures/requirements.txt'), md);
 });
 
-describe('Other Notes', function () {
+describe('Other Notes', function() {
   var md = require('markdown-it')()
               .use(require('../'));
-
   generate(path.join(__dirname, 'fixtures/notes.txt'), md);
 });
 
-describe('Issues', function () {
+describe('Issues', function() {
   var md = require('markdown-it')()
               .use(require('../'));
-
   generate(path.join(__dirname, 'fixtures/issues.txt'), md);
 });
 
-describe('Support rows defined on several lines', function () {
+describe('(optional) Multilines', function() {
   var md = require('markdown-it')()
               .use(require('../'), { enableMultilineRows: true });
-
-  generate(path.join(__dirname, 'fixtures/feature_multilines_row.txt'), md);
+  generate(path.join(__dirname, 'fixtures/multilines.txt'), md);
 });

@@ -7,26 +7,30 @@ GITHUB_PROJ := https://github.com/RedBug312/markdown-it-multimd-table
 
 MODULE_PATH := ./node_modules/.bin
 
-lint:
+
+${MODULE_PATH}:
+	npm install --save-dev
+
+lint: ${MODULE_PATH}
 	${MODULE_PATH}/eslint .
 
-test: lint
+test: ${MODULE_PATH} lint
 	${MODULE_PATH}/mocha -R spec
 
-coverage:
+coverage: ${MODULE_PATH}
 	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha
 	rm -rf ./coverage
 
-test-ci: lint
+test-ci: ${MODULE_PATH} lint
 	# For Github integration test. You should use `make coverage` on local.
 	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha --report lcovonly -- -R spec
 	cat ./coverage/lcov.info | ${MODULE_PATH}/coveralls
 	rm -rf ./coverage
 
-browserify:
+browserify: ${MODULE_PATH}
 	# Browserify
-	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" ; \
-		${MODULE_PATH}/browserify ./ -s markdownitMultimdTable \
+	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */"; \
+		${MODULE_PATH}/browserify . -s markdownitMultimdTable \
 		) > dist/markdown-it-multimd-table.js
 	# Minify
 	${MODULE_PATH}/uglifyjs dist/markdown-it-multimd-table.js -b beautify=false,ascii-only=true -c -m \
