@@ -111,7 +111,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType) {
-    var rowInfo, columns, nextLineText, nextColumn, token, i, col, isValidColumn;
+    var rowInfo, columns, nextLineText, nextColumn, token, i, col, isValidColumn, EndOfMultilines;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
 
     columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
@@ -119,16 +119,25 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
     if (silent) { return true; }
 
-    while (pluginOptions.enableMultilineRows && columns[columns.length - 1].slice(-1) === '\\') {
-      columns[columns.length - 1] = columns[columns.length - 1].slice(0, -1);
-      nextLineText = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
-      nextColumn = escapedSplit(nextLineText.replace(/^\||([^\\])\|$/g, '$1'));
-      if (nextColumn.length === 1 && !/^\||[^\\]\|$/.test(nextLineText)) { return false; }
-      if (nextColumn.length !== columns.length && nextColumn.length !== columns.length - 1) { return false; }
-      for (i = 0; i < nextColumn.length; i++) {
-        columns[i] = columns[i].trim() + '\n' + nextColumn[i].trim();
-      }
-      rowInfo.extractedTextLinesCount += 1;
+    if (pluginOptions.enableMultilineRows && lineText.slice(-1) === '\\') {
+      var trimItself = Function.prototype.call.bind(String.prototype.trim); // equal to (x => x.trim())
+      columns = escapedSplit(lineText.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
+      columns = columns.map(trimItself);
+      do {
+        nextLineText = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
+        nextColumn = escapedSplit(nextLineText.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
+        EndOfMultilines = nextLineText.slice(-1) !== '\\';
+
+        if (nextColumn.length === 1 && !/^\||[^\\]\|$|\\$/.test(nextLineText)) { return false; }
+        if (nextColumn.length !== columns.length && !EndOfMultilines) { return false; }
+
+        for (i = 0; i < nextColumn.length; i++) {
+          columns[i] = columns[i] || '';
+          columns[i] += '\n' + nextColumn[i].trim();
+        }
+        rowInfo.extractedTextLinesCount += 1;
+
+      } while (!EndOfMultilines);
     }
 
     isValidColumn = RegExp.prototype.test.bind(/[^\n]/); // = (s => /[^\n]/.test(s))
