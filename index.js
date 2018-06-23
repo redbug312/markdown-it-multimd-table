@@ -239,7 +239,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
       lineText = getLine(state, line).trim();
 
-      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 1) {
+      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 4) {
         if (NFAstate & tryMatch && match[tryMatch].call(this, state, line, lineText)) { break; }
       }
 
@@ -273,7 +273,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
       lineText = getLine(state, line).trim();
 
-      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 1) {
+      for (tryMatch = 0x10000; tryMatch > 0; tryMatch >>= 4) {
         if (NFAstate & tryMatch && match[tryMatch].call(this, state, line, lineText)) { break; }
       }
 
