@@ -139,6 +139,49 @@ var md = require('markdown-it')()
             .use(require('markdown-it-multimd-table'), {enableMultilineRows: true});
 ```
 
+### Rowspan (optional)
+
+To create cells with a rowspan mark the cells to merge up with `^^`.
+This feature is contributed by [pmccloghrylaing](https://github.com/pmccloghrylaing).
+
+```markdown
+First header | Second header
+-------------|---------------
+Merged       | Cell 1
+^^           | Cell 2
+^^           | Cell 3
+```
+
+would be parsed as
+
+<table>
+<thead>
+<tr>
+<th>First header</th>
+<th>Second header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="3">Merged</td>
+<td>Cell 1</td>
+</tr>
+<tr>
+<td>Cell 2</td>
+</tr>
+<tr>
+<td>Cell 3</td>
+</tr>
+</tbody>
+</table>
+
+And here's how you enable the feature.
+
+```javascript
+var md = require('markdown-it')()
+            .use(require('markdown-it-multimd-table'), {enableRowspan: true});
+```
+
 ## Credits
 * [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight markup processor to produce HTML, LaTeX, and more.
 * [markdown-it](https://markdown-it.github.io/), Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins & high speed.
