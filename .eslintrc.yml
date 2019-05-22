@@ -43,7 +43,8 @@ rules:
   #newline-after-var:      2
   no-alert:               2
   no-array-constructor:   2
-  no-bitwise:             2
+  # inconsisent rule with markdown-it, since bitwise operations are intentionally used.
+  # no-bitwise:             2
   no-caller:              2
   #no-case-declarations:   2
   no-catch-shadow:        2
