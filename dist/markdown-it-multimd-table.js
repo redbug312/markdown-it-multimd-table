@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 3.1.3 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 3.2.0 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 module.exports = function multimd_table_plugin(md, pluginOptions) {
@@ -108,7 +108,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     }
   }
 
-  function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType) {
+  function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType, rowspanState) {
     var rowInfo, columns;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
     columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
@@ -150,9 +150,25 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
 
     for (var i = 0, col = 0; i < rowInfo.columns.length && col < separatorInfo.aligns.length;
                              col += rowInfo.colspans[i], i++) {
+      if (pluginOptions.enableRowspan &&
+          rowspanState && rowspanState[i] &&
+          /^\s*\^\^\s*$/.test(rowInfo.columns[i])) {
+        var rowspanAttr = rowspanState[i].attrs.find(function (attr) {
+          return attr[0] === 'rowspan';
+        });
+        if (!rowspanAttr) {
+          rowspanAttr = [ 'rowspan', 1 ];
+          rowspanState[i].attrs.push(rowspanAttr);
+        }
+        rowspanAttr[1]++;
+        continue;
+      }
       token          = state.push(rowType + '_open', rowType, 1);
       token.map      = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
       token.attrs    = [];
+      rowspanState[i] = {
+        attrs: token.attrs
+      };
       if (separatorInfo.aligns[col]) {
         token.attrs.push([ 'style', 'text-align:' + separatorInfo.aligns[col] ]);
       }
@@ -269,6 +285,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     token = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
 
+    var rowspanState;
     for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
       lineText = getLine(state, line).trim();
 
@@ -296,16 +313,18 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
           if (NFAstate !== 0x01100) { // the first line in thead
             token     = state.push('thead_open', 'thead', 1);
             token.map = theadLines = [ line + 1, 0 ];
+            rowspanState = [];
           }
-          rowInfo = tableRow(state, lineText, line, false, separatorInfo, 'th');
+          rowInfo = tableRow(state, lineText, line, false, separatorInfo, 'th', rowspanState);
           line   += rowInfo.extractedTextLinesCount - 1;
           break;
         case 0x00010:
           if (NFAstate !== 0x10011) { // the first line in tbody
             token     = state.push('tbody_open', 'tbody', 1);
             token.map = tbodyLines = [ line + 1, 0 ];
+            rowspanState = [];
           }
-          rowInfo = tableRow(state, lineText, line, false, separatorInfo, 'td');
+          rowInfo = tableRow(state, lineText, line, false, separatorInfo, 'td', rowspanState);
           line   += rowInfo.extractedTextLinesCount - 1;
           break;
         case 0x00001:
