@@ -33,7 +33,7 @@ browserify: ${MODULE_PATH}
 		${MODULE_PATH}/browserify . -s markdownitMultimdTable \
 		) > dist/markdown-it-multimd-table.js
 	# Minify
-	${MODULE_PATH}/uglifyjs dist/markdown-it-multimd-table.js -b beautify=false,ascii-only=true -c -m \
+	${MODULE_PATH}/terser dist/markdown-it-multimd-table.js -b beautify=false,ascii_only=true -c -m \
 		--preamble "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" \
 		> dist/markdown-it-multimd-table.min.js
 

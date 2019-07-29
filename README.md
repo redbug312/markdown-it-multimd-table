@@ -9,6 +9,7 @@ In general Markdown syntax, we have to write raw HTML tags when `colspan` attrib
 
 So I extend the table parser in markdown-it to support MultiMarkdown table syntax. For now, the following features are provided:
 - Cells spanning multiple columns
+- Cells spanning multiple rows (optional)
 - Grouped table headers
 - Grouped table rows
 - Table captions
