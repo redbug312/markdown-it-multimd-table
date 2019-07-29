@@ -147,8 +147,9 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     var token = state.push('tr_open', 'tr', 1);
     token.map = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
 
-    for (var i = 0, col = 0; i < rowInfo.columns.length && col < separatorInfo.aligns.length;
-                             col += rowInfo.colspans[i], i++) {
+    for (var i = 0, col = 0;
+      i < rowInfo.columns.length && col < separatorInfo.aligns.length;
+      col += rowInfo.colspans[i], i++) {
       if (pluginOptions.enableRowspan &&
           rowspanState && rowspanState[i] &&
           /^\s*\^\^\s*$/.test(rowInfo.columns[i])) {
