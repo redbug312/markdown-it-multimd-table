@@ -14,7 +14,7 @@ ${MODULE_PATH}:
 lint: ${MODULE_PATH}
 	${MODULE_PATH}/eslint .
 
-test: ${MODULE_PATH} lint
+test: ${MODULE_PATH}
 	${MODULE_PATH}/mocha -R spec
 
 coverage: ${MODULE_PATH}
