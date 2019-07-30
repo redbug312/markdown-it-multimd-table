@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = function multimd_table_plugin(md, pluginOptions) {
-  pluginOptions = pluginOptions || {};
+module.exports = function multimd_table_plugin(md/*, options */) {
+  // options = options || {};
 
   function getLine(state, line) {
     var pos = state.bMarks[line] + state.blkIndent,
