@@ -143,6 +143,7 @@ Content       |   **Cell**    |         Cell |
 </tr>
 <tr>
 <td colspan="3"></td>
+<td>Cell</td>
 </tr>
 </tbody>
 </table>

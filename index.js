@@ -9,61 +9,30 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     return state.src.slice(pos, max);
   }
 
-  function escapedSplit(str) {
-    var result = [],
-        max = str.length,
-        lastPos = 0,
-        escaped = false,
-        backTicked = false;
+  function indices_pipes(state, line) {
+    var pos = state.bMarks[line] + state.tShift[line],
+        max = state.eMarks[line],
+        indices = [],
+        escape = false, code = false;
 
-    for (var pos = 0; pos < max; pos++) {
-      switch (str.charCodeAt(pos)) {
+    for (; pos < max; pos++) {
+      switch (state.src.charCodeAt(pos)) {
         case 0x5c /* \ */:
-          escaped = true;
-          break;
+          escape = true; break;
         case 0x60 /* ` */:
-          if (backTicked || !escaped) {
-            /* make \` closes the code sequence, but not open it;
-               the reason is that `\` is correct code block */
-            backTicked = !backTicked;
-          }
-          escaped = false;
-          break;
+          /* make \` closes the code sequence, but not open it;
+             the reason is that `\` is correct code block */
+          if (code || !escape) { code = !code; }
+          escape = false; break;
         case 0x7c /* | */:
-          if (!backTicked && !escaped) {
-            result.push(str.slice(lastPos, pos));
-            lastPos = pos + 1;
-          }
-          escaped = false;
-          break;
+          if (!code && !escape) { indices.push(pos); }
+          escape = false; break;
         default:
-          escaped = false;
-          break;
+          escape = false; break;
       }
     }
 
-    result.push(str.slice(lastPos));
-
-    return result;
-  }
-
-  function countColspan(columns) {
-    var emptyCount = 0,
-        colspans = [];
-
-    for (var i = columns.length - 1; i >= 0; i--) {
-      if (columns[i]) {
-        colspans.unshift(emptyCount + 1);
-        emptyCount = 0;
-      } else {
-        emptyCount++;
-      }
-    }
-    if (emptyCount > 0) {
-      colspans.unshift(emptyCount + 1);
-    }
-
-    return colspans;
+    return indices;
   }
 
   function caption(state, lineText, lineNum, silent) {
@@ -108,78 +77,51 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
   }
 
   function tableRow(state, lineText, lineNum, silent, separatorInfo, rowType, rowspanState) {
-    var rowInfo, columns;
+    var rowInfo;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
-    columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
+    var pipes = indices_pipes(state, lineNum);
 
     // lineText does not contain valid pipe character
-    if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+    if (pipes.length === 0) { return false; }
     if (silent) { return true; }
 
-    // Multiline feature
-    if (pluginOptions.enableMultilineRows && lineText.slice(-1) === '\\') {
-      var lineTextNext, columnsNext, EndOfMultilines;
-      var trimItself = Function.prototype.call.bind(String.prototype.trim); // equal to (x => x.trim())
-      columns = escapedSplit(lineText.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
-      columns = columns.map(trimItself);
-      do {
-        lineTextNext = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
-        columnsNext = escapedSplit(lineTextNext.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
-        EndOfMultilines = lineTextNext.slice(-1) !== '\\';
+    var startLine = lineNum;
+    var start = state.bMarks[startLine] + state.tShift[startLine],
+        max = state.eMarks[startLine];
 
-        if (columnsNext.length === 1 && !/^\||[^\\]\|$|\\$/.test(lineTextNext)) { return false; }
-        if (columnsNext.length !== columns.length && !EndOfMultilines) { return false; }
+    if (pipes[0] > start) { pipes.unshift(start - 1); }          // last '\n' position
+    if (pipes[pipes.length - 1] < max - 1) { pipes.push(max); }  // next '\n' position
 
-        for (var j = 0; j < columnsNext.length; j++) {
-          columns[j] = columns[j] || '';
-          columns[j] += '\n' + columnsNext[j].trim();
-        }
-        rowInfo.extractedTextLinesCount += 1;
-
-      } while (!EndOfMultilines);
-    }
-
-    // Fill in HTML <tr> elements
-    var isValidColumn = RegExp.prototype.test.bind(/[^\n]/); // equal to (s => /[^\n]/.test(s))
-    rowInfo.columns = columns.filter(isValidColumn);
-    rowInfo.colspans = countColspan(columns.map(isValidColumn));
+    // TODO multiline feature
 
     var token = state.push('tr_open', 'tr', 1);
     token.map = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
 
-    for (var i = 0, col = 0;
-      i < rowInfo.columns.length && col < separatorInfo.aligns.length;
-      col += rowInfo.colspans[i], i++) {
-      if (pluginOptions.enableRowspan &&
-          rowspanState && rowspanState[i] &&
-          /^\s*\^\^\s*$/.test(rowInfo.columns[i])) {
-        var rowspanAttr = rowspanState[i].attrs.find(function (attr) {
-          return attr[0] === 'rowspan';
-        });
-        if (!rowspanAttr) {
-          rowspanAttr = [ 'rowspan', 1 ];
-          rowspanState[i].attrs.push(rowspanAttr);
-        }
-        rowspanAttr[1]++;
+    var oldToken = new state.Token('table_fake_cell', '', 0);
+    for (var s = 0; s < pipes.length - 1; s++) {
+      // Increment colspan counts to oldToken (last table cell)
+      if (pipes[s] + 1 === pipes[s + 1]) {
+        var colspan = oldToken.attrGet('colspan');
+        oldToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
         continue;
       }
+
       token          = state.push(rowType + '_open', rowType, 1);
       token.map      = [ lineNum, lineNum + rowInfo.extractedTextLinesCount ];
       token.attrs    = [];
-      rowspanState[i] = {
+      rowspanState[s] = {
         attrs: token.attrs
       };
-      if (separatorInfo.aligns[col]) {
-        token.attrs.push([ 'style', 'text-align:' + separatorInfo.aligns[col] ]);
+      if (separatorInfo.aligns[s]) {
+        token.attrs.push([ 'style', 'text-align:' + separatorInfo.aligns[s] ]);
       }
-      if (separatorInfo.wraps[col]) {
+      if (separatorInfo.wraps[s]) {
         token.attrs.push([ 'class', 'extend' ]);
       }
-      if (rowInfo.colspans[i] > 1) {
-        token.attrs.push([ 'colspan', rowInfo.colspans[i] ]);
-      }
+      oldToken = token;
 
-      appendRowToken(state, rowInfo.columns[i].trim(), lineNum, lineNum + rowInfo.extractedTextLinesCount);
+      var t = state.src.slice(pipes[s] + 1, pipes[s + 1]).trim();
+      appendRowToken(state, t, lineNum, lineNum + rowInfo.extractedTextLinesCount);
 
       token          = state.push(rowType + '_close', rowType, -1);
     }
@@ -194,17 +136,24 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
     if (state.sCount[lineNum] - state.blkIndent >= 4) { return false; }
 
     // lineText does not contain valid pipe character
-    var columns = escapedSplit(lineText.replace(/^\||([^\\])\|$/g, '$1'));
-    if (columns.length === 1 && !/^\||[^\\]\|$/.test(lineText)) { return false; }
+    var pipes = indices_pipes(state, lineNum);
+    if (pipes.length === 0) { return false; }
 
     var separatorInfo = { aligns: [], wraps: [] };
 
-    for (var i = 0; i < columns.length; i++) {
-      var t = columns[i].trim();
+    var startLine = lineNum;
+    var start = state.bMarks[startLine] + state.tShift[startLine],
+        max = state.eMarks[startLine];
+
+    if (pipes[0] > start) { pipes.unshift(start); }
+    if (pipes[pipes.length - 1] < max - 1) { pipes.push(max); }
+
+    for (var s = 0; s < pipes.length - 1; s++) {
+      var t = state.src.slice(pipes[s] + 1, pipes[s + 1]).trim();
       if (!/^:?(-+|=+):?\+?$/.test(t)) { return false; }
 
       separatorInfo.wraps.push(t.charCodeAt(t.length - 1) === 0x2B/* + */);
-      if (separatorInfo.wraps[i]) {
+      if (separatorInfo.wraps[s]) {
         t = t.slice(0, -1);
       }
 
