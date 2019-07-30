@@ -17,7 +17,7 @@ lint: ${MODULE_PATH}
 test: ${MODULE_PATH}
 	${MODULE_PATH}/mocha -R spec
 
-coverage: ${MODULE_PATH}
+coverage: ${MODULE_PATH} lint
 	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha
 	rm -rf ./coverage
 
@@ -27,7 +27,7 @@ test-ci: ${MODULE_PATH} lint
 	cat ./coverage/lcov.info | ${MODULE_PATH}/coveralls
 	rm -rf ./coverage
 
-browserify: ${MODULE_PATH}
+browserify: ${MODULE_PATH} lint test
 	# Browserify
 	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */"; \
 		${MODULE_PATH}/browserify . -s markdownitMultimdTable \

@@ -1,4 +1,5 @@
 'use strict';
+var NFA = require('./lib/nfa.js');
 
 module.exports = function multimd_table_plugin(md/*, options */) {
   // options = options || {};
@@ -74,7 +75,7 @@ module.exports = function multimd_table_plugin(md/*, options */) {
     }
   }
 
-  function table_row(state, startLine, endLine, silent, separatorInfo, rowType, rowspanState) {
+  function table_row(state, startLine, endLine, silent, type) {
     var rowInfo;
     rowInfo = { colspans: null, columns: null, extractedTextLinesCount: 1 };
     var pipes = indices_pipes(state, startLine);
@@ -104,16 +105,13 @@ module.exports = function multimd_table_plugin(md/*, options */) {
         continue;
       }
 
-      token          = state.push(rowType + '_open', rowType, 1);
+      token          = state.push('table_' + type + '_open', type, 1);
       token.map      = [ startLine, endLine ];
       token.attrs    = [];
-      rowspanState[s] = {
-        attrs: token.attrs
-      };
-      if (separatorInfo.aligns[s]) {
-        token.attrs.push([ 'style', 'text-align:' + separatorInfo.aligns[s] ]);
+      if (state.env.table.separator.aligns[s]) {
+        token.attrs.push([ 'style', 'text-align:' + state.env.table.separator.aligns[s] ]);
       }
-      if (separatorInfo.wraps[s]) {
+      if (state.env.table.separator.wraps[s]) {
         token.attrs.push([ 'class', 'extend' ]);
       }
       oldToken = token;
@@ -121,12 +119,20 @@ module.exports = function multimd_table_plugin(md/*, options */) {
       var t = state.src.slice(pipes[s] + 1, pipes[s + 1]).trim();
       appendRowToken(state, t, startLine, endLine);
 
-      token          = state.push(rowType + '_close', rowType, -1);
+      token          = state.push('table_' + type + '_close', type, -1);
     }
 
     state.push('tr_close', 'tr', -1);
 
     return rowInfo;
+  }
+
+  function table_header_row(state, startLine, endLine, silent) {
+    return table_row(state, startLine, endLine, silent, 'th');
+  }
+
+  function table_data_row(state, startLine, endLine, silent) {
+    return table_row(state, startLine, endLine, silent, 'td');
   }
 
   function table_separator(state, startLine, endLine, silent) {
@@ -171,7 +177,7 @@ module.exports = function multimd_table_plugin(md/*, options */) {
     // Indentation is checked only on separators
     var start = state.bMarks[startLine] + state.tShift[startLine],
         max = state.eMarks[startLine];
-    return !state.src.slice(start, max);
+    return start === max;
   }
 
   function table(state, startLine, endLine, silent) {
@@ -187,8 +193,8 @@ module.exports = function multimd_table_plugin(md/*, options */) {
     var match = {
       0x10000: function (line) { return table_caption(state, line, line + 1, true); },
       0x01000: function (line) { return table_separator(state, line, line + 1); },
-      0x00100: function (line) { return table_row(state, line, line + 1, true, null, 'th'); },
-      0x00010: function (line) { return table_row(state, line, line + 1, true, null, 'td'); },
+      0x00100: function (line) { return table_header_row(state, line, line + 1, true); },
+      0x00010: function (line) { return table_data_row(state, line, line + 1, true); },
       0x00001: function (line) { return table_empty(state, line, line + 1, true); }
     };
     var transitions = {
@@ -202,43 +208,60 @@ module.exports = function multimd_table_plugin(md/*, options */) {
     /* Check validity; Gather separator informations */
     if (startLine + 2 > endLine) { return false; }
 
-    var NFAstate, line, candidate, rowInfo, separatorInfo;
-    var captionAtFirst = false;
+    var NFAstate, line, candidate, rowInfo;
+    var tableNFA = new NFA();
+    var tableInfo = { sepLine: 0, lines: [] };
 
-    for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
-
-      for (candidate = 0x10000; candidate > 0; candidate >>= 4) {
-        if (NFAstate & candidate && match[candidate].call(this, line)) { break; }
-      }
-
-      switch (candidate) {
-        case 0x10000:
-          if (NFAstate === 0x10100) { captionAtFirst = true; }
-          break;
+    tableNFA.set_highest_alphabet(0x10000);
+    tableNFA.set_start_state(0x10100);
+    tableNFA.set_accept_states([ 0x10010, 0x10011, 0x00000 ]);
+    tableNFA.set_match_alphabets({
+      0x10000: function (_line) { return table_caption(state, _line, _line + 1, true); },
+      0x01000: function (_line) { return table_separator(state, _line, _line + 1); },
+      0x00100: function (_line) { return table_header_row(state, _line, _line + 1, true); },
+      0x00010: function (_line) { return table_data_row(state, _line, _line + 1, true); },
+      0x00001: function (_line) { return table_empty(state, _line, _line + 1, true); }
+    });
+    tableNFA.set_transitions({
+      0x10100: { 0x10000: 0x00100, 0x00100: 0x01100 },
+      0x00100: { 0x00100: 0x01100 },
+      0x01100: { 0x01000: 0x10010, 0x00100: 0x01100 },
+      0x10010: { 0x10000: 0x00000, 0x00010: 0x10011 },
+      0x10011: { 0x10000: 0x00000, 0x00010: 0x10011, 0x00001: 0x10010 }
+    });
+    tableNFA.set_actions(function (_line, _state, _type) {
+      switch (_type) {
         case 0x01000:
-          separatorInfo = table_separator(state, line, line + 1, false);
-          if (silent) { return true; }
+          /* Don't mix up NFA _state and markdown-it state */
+          tableInfo.separator = table_separator(state, _line, _line + 1, false);
+          tableInfo.lines.push({ type: _type, endLine: _line + 1 });
+          if (silent) { tableNFA.accept(); }
           break;
+        case 0x10000:
         case 0x00100:
         case 0x00010:
         case 0x00001:
+          tableInfo.lines.push({ type: _type, endLine: _line + 1 });
           break;
         case 0x00000:
-          if (NFAstate & 0x00100) { return false; } // separator not reached
+          if (_state & 0x00100) { tableNFA.reject(); } // separator not reached
       }
+      // console.log(_state.toString(16), _type.toString(16));
+    });
 
-      NFAstate = transitions[NFAstate][candidate] || 0x00000;
-    }
+    if (tableNFA.execute(startLine, endLine) === false) { return false; }
+    if (silent) { return true; }
 
-    if (!separatorInfo) { return false; }
+    // console.log(tableInfo);
 
     /* Generate table HTML */
     var token, tableLines, theadLines, tbodyLines;
+    state.env.table = tableInfo;  // rewrite global varaibles only when rendering
+    // console.log(state.env.table.separator);
 
     token = state.push('table_open', 'table', 1);
     token.map = tableLines = [ startLine, 0 ];
 
-    var rowspanState;
     for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
 
       for (candidate = 0x10000; candidate > 0; candidate >>= 4) {
@@ -251,7 +274,7 @@ module.exports = function multimd_table_plugin(md/*, options */) {
             tbodyLines[1] = line;
             token = state.push('tbody_close', 'tbody', -1);
           }
-          if (NFAstate === 0x10100 || !captionAtFirst) {
+          if (NFAstate === 0x10100 || state.env.table.lines[0].type !== 0x10000) {
             table_caption(state, line, line + 1, false);
           } else {
             line--;
@@ -265,18 +288,16 @@ module.exports = function multimd_table_plugin(md/*, options */) {
           if (NFAstate !== 0x01100) { // the first line in thead
             token     = state.push('thead_open', 'thead', 1);
             token.map = theadLines = [ line + 1, 0 ];
-            rowspanState = [];
           }
-          rowInfo = table_row(state, line, line + 1, false, separatorInfo, 'th', rowspanState);
+          rowInfo = table_header_row(state, line, line + 1, false);
           line   += rowInfo.extractedTextLinesCount - 1;
           break;
         case 0x00010:
           if (NFAstate !== 0x10011) { // the first line in tbody
             token     = state.push('tbody_open', 'tbody', 1);
             token.map = tbodyLines = [ line + 1, 0 ];
-            rowspanState = [];
           }
-          rowInfo = table_row(state, line, line + 1, false, separatorInfo, 'td', rowspanState);
+          rowInfo = table_data_row(state, line, line + 1, false);
           line   += rowInfo.extractedTextLinesCount - 1;
           break;
         case 0x00001:
