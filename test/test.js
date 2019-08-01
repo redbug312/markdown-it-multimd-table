@@ -10,23 +10,23 @@ describe('Basic', function () {
   generate(path.join(__dirname, 'fixtures/basic.txt'), md);
 });
 
-describe('Requirements', function () {
-  var md = require('markdown-it')()
-              .use(require('../'));
-  generate(path.join(__dirname, 'fixtures/requirements.txt'), md);
-});
+// describe('Requirements', function () {
+//   var md = require('markdown-it')()
+//               .use(require('../'));
+//   generate(path.join(__dirname, 'fixtures/requirements.txt'), md);
+// });
 
-describe('Other Notes', function () {
-  var md = require('markdown-it')()
-              .use(require('../'));
-  generate(path.join(__dirname, 'fixtures/notes.txt'), md);
-});
+// describe('Other Notes', function () {
+//   var md = require('markdown-it')()
+//               .use(require('../'));
+//   generate(path.join(__dirname, 'fixtures/notes.txt'), md);
+// });
 
-describe('Issues', function () {
-  var md = require('markdown-it')()
-              .use(require('../'));
-  generate(path.join(__dirname, 'fixtures/issues.txt'), md);
-});
+// describe('Issues', function () {
+//   var md = require('markdown-it')()
+//               .use(require('../'));
+//   generate(path.join(__dirname, 'fixtures/issues.txt'), md);
+// });
 
 // describe('(optional) Multilines', function () {
 //   var md = require('markdown-it')()

@@ -4,7 +4,7 @@ var NFA = require('./lib/nfa.js');
 module.exports = function multimd_table_plugin(md/*, options */) {
   // options = options || {};
 
-  function indices_pipes(state, line) {
+  function indices_pipes(state, line) {  // TODO rename to scan_bound_indices
     var start = state.bMarks[line] + state.tShift[line],
         max = state.eMarks[line],
         indices = [],
@@ -34,13 +34,14 @@ module.exports = function multimd_table_plugin(md/*, options */) {
         max = state.eMarks[startLine],
         captionRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/;
     var matches = state.src.slice(start, max).match(captionRE);
+
     if (startLine + 1 !== endLine) { return false; }
     if (!matches) { return false; }
     if (silent)  { return true; }
     // TODO eliminate caption RE
 
-    var captionInfo = { caption: null, label: null };
-    captionInfo.content = matches[1];
+    var captionInfo = { text: null, label: null };
+    captionInfo.text = matches[1];
     captionInfo.label = matches[2] || matches[1];
 
     var token;
@@ -49,7 +50,7 @@ module.exports = function multimd_table_plugin(md/*, options */) {
     token.attrs    = [ [ 'id', captionInfo.label.toLowerCase().replace(/\W+/g, '') ] ];
 
     token          = state.push('inline', '', 0);
-    token.content  = captionInfo.content;
+    token.content  = captionInfo.text;
     token.map      = [ startLine, endLine ];
     token.children = [];
 
@@ -73,6 +74,22 @@ module.exports = function multimd_table_plugin(md/*, options */) {
       token.map      = [ startLine, endLine ];
       token.children = [];
     }
+  }
+
+  function validate_table_row(state, line, silent) {
+    var start = state.bMarks[line] + state.tShift[line],
+        max = state.eMarks[line],
+        info = {}, pipes = indices_pipes(state, line);
+
+    // lineText does not contain valid pipe character
+    if (pipes.length === 0) { return false; }
+    if (silent) { return true; }
+
+    if (pipes[0] > start) { pipes.unshift(start - 1); }          // last '\n' position
+    if (pipes[pipes.length - 1] < max - 1) { pipes.push(max); }  // next '\n' position
+    info.pipes = pipes;
+
+    return { bounds: pipes };
   }
 
   function table_row(state, startLine, endLine, silent, type) {
@@ -189,28 +206,19 @@ module.exports = function multimd_table_plugin(md/*, options */) {
      *   |  state  | caption separator header data empty | --> lower precedence
      *   | 0x10100 |    1        0       1     0     0   |
      */
-
-    var match = {
-      0x10000: function (line) { return table_caption(state, line, line + 1, true); },
-      0x01000: function (line) { return table_separator(state, line, line + 1); },
-      0x00100: function (line) { return table_header_row(state, line, line + 1, true); },
-      0x00010: function (line) { return table_data_row(state, line, line + 1, true); },
-      0x00001: function (line) { return table_empty(state, line, line + 1, true); }
-    };
-    var transitions = {
-      0x10100: { 0x10000: 0x00100, 0x00100: 0x01100 },
-      0x00100: { 0x00100: 0x01100 },
-      0x01100: { 0x01000: 0x10010, 0x00100: 0x01100 },
-      0x10010: { 0x10000: 0x00000, 0x00010: 0x10011 },
-      0x10011: { 0x10000: 0x00000, 0x00010: 0x10011, 0x00001: 0x10010 }
-    };
-
-    /* Check validity; Gather separator informations */
     if (startLine + 2 > endLine) { return false; }
 
-    var NFAstate, line, candidate, rowInfo;
-    var tableNFA = new NFA();
-    var tableInfo = { sepLine: 0, lines: [] };
+    /**
+     * First pass: validate and collect info into table token.
+     * IR is stored in markdown-it token.meta to be pushed later.
+     * table/tr open tokens are generated here.
+     */
+    var tableNFA = new NFA(),
+        token, tableToken;
+    var tr, tableLines, trToken, tcol, tag, tgroupLines, text;
+
+    tableToken      = new state.Token('table_open', 'table', 1);
+    tableToken.meta = { sep: null, cap: null, grp: 0x10, tr: [] };
 
     tableNFA.set_highest_alphabet(0x10000);
     tableNFA.set_start_state(0x10100);
@@ -229,98 +237,110 @@ module.exports = function multimd_table_plugin(md/*, options */) {
       0x10010: { 0x10000: 0x00000, 0x00010: 0x10011 },
       0x10011: { 0x10000: 0x00000, 0x00010: 0x10011, 0x00001: 0x10010 }
     });
+    /* Don't mix up NFA `_state` and markdown-it `state` */
     tableNFA.set_actions(function (_line, _state, _type) {
       switch (_type) {
-        case 0x01000:
-          /* Don't mix up NFA _state and markdown-it state */
-          tableInfo.separator = table_separator(state, _line, _line + 1, false);
-          tableInfo.lines.push({ type: _type, endLine: _line + 1 });
-          if (silent) { tableNFA.accept(); }
-          break;
         case 0x10000:
+          if (tableToken.meta.cap) { break; }
+          tableToken.meta.cap       = table_caption(state, _line, _line + 1, false);
+          tableToken.meta.cap.map   = [ _line, _line + 1 ];
+          tableToken.meta.cap.first = (_line === startLine);
+          break;
+        case 0x01000:
+          if (silent) { tableNFA.accept(); }
+          tableToken.meta.grp = 0x10;
+          tableToken.meta.sep = table_separator(state, _line, _line + 1, false);
+          tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
+          break;
         case 0x00100:
         case 0x00010:
+          token           = new state.Token('table_row_open', 'tr', 1);
+          token.meta      = validate_table_row(state, _line, false);
+          token.meta.type = _type;
+          token.meta.map  = [ _line, _line + 1 ];
+          token.meta.grp  = tableToken.meta.grp;
+          tableToken.meta.tr.push(token);
+          tableToken.meta.grp = 0x00;
+          break;
         case 0x00001:
-          tableInfo.lines.push({ type: _type, endLine: _line + 1 });
+          tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
+          tableToken.meta.grp = 0x10;
           break;
         case 0x00000:
           if (_state & 0x00100) { tableNFA.reject(); } // separator not reached
       }
-      // console.log(_state.toString(16), _type.toString(16));
     });
 
     if (tableNFA.execute(startLine, endLine) === false) { return false; }
     if (silent) { return true; }
 
-    // console.log(tableInfo);
+    /* XXX The last data row cannot be detected? */
+    tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
 
-    /* Generate table HTML */
-    var token, tableLines, theadLines, tbodyLines;
-    state.env.table = tableInfo;  // rewrite global varaibles only when rendering
-    // console.log(state.env.table.separator);
+    /**
+     * Second pass: actually push the tokens into state.tokens.
+     * thead/tbody/th/td open tokens and all closed tokens are generated here.
+     * thead/tbody are generally called tgroup; td/th are generally called tcol.
+     */
 
-    token = state.push('table_open', 'table', 1);
-    token.map = tableLines = [ startLine, 0 ];
+    state.tokens.push(tableToken);
+    tableToken.map = tableLines = [ startLine, 0 ];
 
-    for (NFAstate = 0x10100, line = startLine; NFAstate && line < endLine; line++) {
+    if (tableToken.meta.cap && tableToken.meta.cap.first) {
+      token          = state.push('caption_open', 'caption', 1);
+      token.map      = [ startLine, endLine ];
+      token.attrs    = [ [ 'id', tableToken.meta.cap.label.toLowerCase().replace(/\W+/g, '') ] ];
 
-      for (candidate = 0x10000; candidate > 0; candidate >>= 4) {
-        if (NFAstate & candidate && match[candidate].call(this, line)) { break; }
-      }
+      token          = state.push('inline', '', 0);
+      token.content  = tableToken.meta.cap.text;
+      token.map      = [ startLine, endLine ];
+      token.children = [];
 
-      switch (candidate) {
-        case 0x10000:
-          if (NFAstate !== 0x10100) { // the last line in table
-            tbodyLines[1] = line;
-            token = state.push('tbody_close', 'tbody', -1);
-          }
-          if (NFAstate === 0x10100 || state.env.table.lines[0].type !== 0x10000) {
-            table_caption(state, line, line + 1, false);
-          } else {
-            line--;
-          }
-          break;
-        case 0x01000:
-          theadLines[1] = line;
-          token         = state.push('thead_close', 'thead', -1);
-          break;
-        case 0x00100:
-          if (NFAstate !== 0x01100) { // the first line in thead
-            token     = state.push('thead_open', 'thead', 1);
-            token.map = theadLines = [ line + 1, 0 ];
-          }
-          rowInfo = table_header_row(state, line, line + 1, false);
-          line   += rowInfo.extractedTextLinesCount - 1;
-          break;
-        case 0x00010:
-          if (NFAstate !== 0x10011) { // the first line in tbody
-            token     = state.push('tbody_open', 'tbody', 1);
-            token.map = tbodyLines = [ line + 1, 0 ];
-          }
-          rowInfo = table_data_row(state, line, line + 1, false);
-          line   += rowInfo.extractedTextLinesCount - 1;
-          break;
-        case 0x00001:
-          tbodyLines[1] = line;
-          token         = state.push('tbody_close', 'tbody', -1);
-          break;
-        case 0x00000:
-          line--;
-          break;
-      }
-
-      NFAstate = transitions[NFAstate][candidate] || 0x00000;
+      token         = state.push('caption_close', 'caption', -1);
     }
 
-    if (tbodyLines && !tbodyLines[1]) { // Corner case: table without tbody or EOL
-      tbodyLines[1] = line;
-      token         = state.push('tbody_close', 'tbody', -1);
+    for (tr = 0; tr < tableToken.meta.tr.length; tr++) {
+      /* Push in thead/tbody and tr open tokens */
+      trToken = tableToken.meta.tr[tr];
+      if (trToken.meta.grp & 0x10) {
+        tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
+        token     = state.push('table_group_open', tag, 1);
+        token.map = tgroupLines = [ trToken.meta.map[0], 0 ];
+      }
+      state.tokens.push(trToken);
+
+      /* Push in th/td tokens */
+      for (tcol = 0; tcol < trToken.meta.bounds.length - 1; tcol++) {
+        tag = (trToken.meta.type === 0x00100) ? 'th' : 'td';
+        token       = state.push('table_column_open', tag, 1);
+        token.map   = trToken.meta.map;
+        token.attrs = [];
+        if (tableToken.meta.sep.aligns[tcol]) {
+          token.attrs.push([ 'style', 'text-align:' + tableToken.meta.sep.aligns[tcol] ]);
+        }
+        if (tableToken.meta.sep.wraps[tcol]) {
+          token.attrs.push([ 'class', 'extend' ]);
+        }
+
+        text = state.src.slice(trToken.meta.bounds[tcol] + 1, trToken.meta.bounds[tcol + 1]).trim();
+        appendRowToken(state, text, trToken.meta.map[0], trToken.meta.map[1]);
+
+        token     = state.push('table_column_close', tag, -1);
+      }
+
+      /* Push in tr and thead/tbody closed tokens */
+      state.push('tr_close', 'tr', -1);
+      if (trToken.meta.grp & 0x01) {
+        tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
+        token = state.push('table_group_close', tag, -1);
+        tgroupLines[1] = trToken.meta.map[1];
+      }
     }
 
-    tableLines[1] = line;
+    tableLines[1] = tgroupLines[1];
     token = state.push('table_close', 'table', -1);
 
-    state.line = line;
+    state.line = tgroupLines[1];
     return true;
   }
 
