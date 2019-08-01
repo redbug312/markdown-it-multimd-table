@@ -45,7 +45,7 @@ A         | B     |
 text:     | 1     |\
 - over    | 2     |\
 - several |       |\
-- lines   |       |
+  - lines |       |
 .
 <table>
 <thead>
@@ -60,8 +60,11 @@ text:     | 1     |\
 <p>text:</p>
 <ul>
 <li>over</li>
-<li>several</li>
+<li>several
+<ul>
 <li>lines</li>
+</ul>
+</li>
 </ul>
 </td>
 <td>
