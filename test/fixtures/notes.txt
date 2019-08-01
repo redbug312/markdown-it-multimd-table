@@ -166,6 +166,7 @@ Content       |   **Cell**    |         Cell |
 [             |               |              ]
 .
 <table>
+<caption id="">             |               |              </caption>
 <thead>
 <tr>
 <th></th>
@@ -188,7 +189,6 @@ Content       |   **Cell**    |         Cell |
 <td style="text-align:right">Cell</td>
 </tr>
 </tbody>
-<caption id="">             |               |              </caption>
 </table>
 .
 
@@ -285,6 +285,7 @@ Content       |                             ||
 [Prototype table]
 .
 <table>
+<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -307,7 +308,6 @@ Content       |                             ||
 <td style="text-align:right">Cell</td>
 </tr>
 </tbody>
-<caption id="prototypetable">Prototype table</caption>
 </table>
 .
 
@@ -322,12 +322,13 @@ First Header  | Second Header | Third Header |
  ------------ | :-----------: | -----------: |
 Content       |          *Long Cell*        ||
 Content       |   **Cell**    |         Cell |
-                                              
+
 New section   |     More      |         Data |
 And more      | With an escaped '\|'         ||
 [Prototype table]
 .
 <table>
+<caption id="prototypetable">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -361,7 +362,6 @@ And more      | With an escaped '\|'         ||
 <td style="text-align:center" colspan="2">With an escaped '|'</td>
 </tr>
 </tbody>
-<caption id="prototypetable">Prototype table</caption>
 </table>
 .
 
