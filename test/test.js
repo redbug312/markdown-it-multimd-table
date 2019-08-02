@@ -34,8 +34,8 @@ describe('(optional) Multilines', function () {
   generate(path.join(__dirname, 'fixtures/multilines.txt'), md);
 });
 
-// describe('(optional) Rowspans', function () {
-//   var md = require('markdown-it')()
-//               .use(require('../'), { enableMultilineRows: true, enableRowspan: true });
-//   generate(path.join(__dirname, 'fixtures/rowspan.txt'), md);
-// });
+describe('(optional) Rowspans', function () {
+  var md = require('markdown-it')()
+              .use(require('../'), { enableMultilineRows: true, enableRowspan: true });
+  generate(path.join(__dirname, 'fixtures/rowspan.txt'), md);
+});

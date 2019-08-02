@@ -127,6 +127,7 @@ module.exports = function multimd_table_plugin(md, options) {
     var tableNFA = new NFA(),
         token, tableToken, trToken,
         colspan, leftToken,
+        rowspan, upTokens = [],
         tableLines, tgroupLines,
         tag, text, range, r, c, b;
 
@@ -253,11 +254,17 @@ module.exports = function multimd_table_plugin(md, options) {
       /* Push in th/td tokens */
       for (c = 0; c < trToken.meta.bounds.length - 1; c++) {
         range = [ trToken.meta.bounds[c] + 1, trToken.meta.bounds[c + 1] ];
+        text = state.src.slice.apply(state.src, range);
 
-        /* Colspan. Not use "whether text is empty" since it's already trimmed. */
-        if (range[0] === range[1]) {
+        if (text === '') {
           colspan = leftToken.attrGet('colspan');
           leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
+          continue;
+        }
+        if (options.enableRowspan && text.trim() === '^^') {
+          upTokens[c] = upTokens[c] || new state.Token('table_fake_tcol_open', '', 1);
+          rowspan = upTokens[c].attrGet('rowspan');
+          upTokens[c].attrSet('rowspan', rowspan === null ? 2 : rowspan + 1);
           continue;
         }
 
@@ -272,11 +279,12 @@ module.exports = function multimd_table_plugin(md, options) {
           token.attrs.push([ 'class', 'extend' ]);
         }
         leftToken = token;
+        upTokens[c] = token;
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
         if (options.enableMultilineRows && trToken.meta.multiline) {
-          text = [];
-          for (b = 0; b < trToken.meta.mbounds.length; b++) {
+          text = [ text.trimRight() ];
+          for (b = 1; b < trToken.meta.mbounds.length; b++) {
             if (c < trToken.meta.mbounds[b].length - 1) {
               range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
               text.push(state.src.slice.apply(state.src, range).trimRight());
@@ -285,9 +293,8 @@ module.exports = function multimd_table_plugin(md, options) {
           text = text.filter(String).join('\n');
           state.md.block.parse(text, state.md, state.env, state.tokens);
         } else {
-          text = state.src.slice.apply(state.src, range).trim();
           token          = state.push('inline', '', 0);
-          token.content  = text;
+          token.content  = text.trim();
           token.map      = trToken.meta.map;
           token.children = [];
         }
