@@ -6,7 +6,7 @@ module.exports = function multimd_table_plugin(md, options) {
   options = options || {};
 
   function scan_bound_indices(state, line) {
-    var start = state.bMarks[line], /* no tShift for \n */
+    var start = state.bMarks[line], /* no tShift to detect \n */
         max = state.eMarks[line],
         bounds = [], pos,
         escape = false, code = false;
@@ -20,6 +20,7 @@ module.exports = function multimd_table_plugin(md, options) {
           /* make \` closes the code sequence, but not open it;
              the reason is that `\` is correct code block */
           if (code || !escape) { code = !code; }
+          if (state.src.charCodeAt(pos - 1) === 0x60) { code = false; }
           escape = false; break;
         case 0x7c /* | */:
           if (!code && !escape) { bounds.push(pos); }
@@ -37,7 +38,7 @@ module.exports = function multimd_table_plugin(md, options) {
     return bounds;
   }
 
-  function table_caption(state, line, silent) {
+  function table_caption(state, silent, line) {
     var start = state.bMarks[line] + state.tShift[line],
         max = state.eMarks[line],
         capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/,
@@ -55,7 +56,7 @@ module.exports = function multimd_table_plugin(md, options) {
     return meta;
   }
 
-  function table_row(state, line, silent) {
+  function table_row(state, silent, line) {
     var bounds = scan_bound_indices(state, line),
         meta = {}, start, pos, oldMax;
 
@@ -79,7 +80,7 @@ module.exports = function multimd_table_plugin(md, options) {
     return meta;
   }
 
-  function table_separator(state, line, silent) {
+  function table_separator(state, silent, line) {
     var bounds = scan_bound_indices(state, line),
         meta = { aligns: [], wraps: [] },
         sepRE = /^:?(-+|=+):?\+?$/,
@@ -108,7 +109,7 @@ module.exports = function multimd_table_plugin(md, options) {
     return meta;
   }
 
-  function table_empty(state, line/*, silent*/) {
+  function table_empty(state, silent, line) {
     var start = state.bMarks[line] + state.tShift[line],
         max = state.eMarks[line];
     return start === max;
@@ -123,6 +124,12 @@ module.exports = function multimd_table_plugin(md, options) {
      *   |  state  | caption separator header data empty | --> lower precedence
      *   | 0x10100 |    1        0       1     0     0   |
      */
+    var tableNFA = new NFA(),
+        token, tableToken, trToken,
+        colspan, leftToken,
+        tableLines, tgroupLines,
+        tag, text, range, r, c, b;
+
     if (startLine + 2 > endLine) { return false; }
 
     /**
@@ -130,12 +137,6 @@ module.exports = function multimd_table_plugin(md, options) {
      * IR is stored in markdown-it token.meta to be pushed later.
      * table/tr open tokens are generated here.
      */
-    var tableNFA = new NFA(),
-        token, tableToken, trToken,
-        tableLines, tgroupLines,
-        tag, text, r, c, b,
-        blockParser, blockState;
-
     tableToken       = new state.Token('table_open', 'table', 1);
     tableToken.meta  = { sep: null, cap: null, grp: 0x10, tr: [], mtr: -1 };
 
@@ -143,11 +144,11 @@ module.exports = function multimd_table_plugin(md, options) {
     tableNFA.set_start_state(0x10100);
     tableNFA.set_accept_states([ 0x10010, 0x10011, 0x00000 ]);
     tableNFA.set_match_alphabets({
-      0x10000: function (_line) { return table_caption(state, _line, true); },
-      0x01000: function (_line) { return table_separator(state, _line, true); },
-      0x00100: function (_line) { return table_row(state, _line, true); },
-      0x00010: function (_line) { return table_row(state, _line, true); },
-      0x00001: function (_line) { return table_empty(state, _line, true); }
+      0x10000: table_caption.bind(this, state, true),
+      0x01000: table_separator.bind(this, state, true),
+      0x00100: table_row.bind(this, state, true),
+      0x00010: table_row.bind(this, state, true),
+      0x00001: table_empty.bind(this, state, true)
     });
     tableNFA.set_transitions({
       0x10100: { 0x10000: 0x00100, 0x00100: 0x01100 },
@@ -161,13 +162,13 @@ module.exports = function multimd_table_plugin(md, options) {
       switch (_type) {
         case 0x10000:
           if (tableToken.meta.cap) { break; }
-          tableToken.meta.cap       = table_caption(state, _line, false);
+          tableToken.meta.cap       = table_caption(state, false, _line);
           tableToken.meta.cap.map   = [ _line, _line + 1 ];
           tableToken.meta.cap.first = (_line === startLine);
           break;
         case 0x01000:
           if (silent) { tableNFA.accept(); }
-          tableToken.meta.sep     = table_separator(state, _line, false);
+          tableToken.meta.sep     = table_separator(state, false, _line);
           tableToken.meta.sep.map = [ _line, _line + 1 ];
           tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
           tableToken.meta.grp = 0x10;
@@ -175,7 +176,7 @@ module.exports = function multimd_table_plugin(md, options) {
         case 0x00100:
         case 0x00010:
           trToken           = new state.Token('table_row_open', 'tr', 1);
-          trToken.meta      = table_row(state, _line, false);
+          trToken.meta      = table_row(state, false, _line);
           trToken.meta.type = _type;
           trToken.meta.map  = [ _line, _line + 1 ];
           trToken.meta.grp  = tableToken.meta.grp;
@@ -231,10 +232,8 @@ module.exports = function multimd_table_plugin(md, options) {
       token.map      = tableToken.meta.cap.map;
       token.children = [];
 
-      token         = state.push('caption_close', 'caption', -1);
+      token          = state.push('caption_close', 'caption', -1);
     }
-
-    var leftToken, colspan, tcolPos;
 
     for (r = 0; r < tableToken.meta.tr.length; r++) {
       leftToken = new state.Token('table_fake_tcol_open', '', 1);
@@ -253,10 +252,10 @@ module.exports = function multimd_table_plugin(md, options) {
 
       /* Push in th/td tokens */
       for (c = 0; c < trToken.meta.bounds.length - 1; c++) {
-        tcolPos = [ trToken.meta.bounds[c] + 1, trToken.meta.bounds[c + 1] ];
+        range = [ trToken.meta.bounds[c] + 1, trToken.meta.bounds[c + 1] ];
 
         /* Colspan. Not use "whether text is empty" since it's already trimmed. */
-        if (tcolPos[0] === tcolPos[1]) {
+        if (range[0] === range[1]) {
           colspan = leftToken.attrGet('colspan');
           leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
           continue;
@@ -279,24 +278,21 @@ module.exports = function multimd_table_plugin(md, options) {
           text = [];
           for (b = 0; b < trToken.meta.mbounds.length; b++) {
             if (c < trToken.meta.mbounds[b].length - 1) {
-              tcolPos = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
-              text.push(state.src.slice.apply(state.src, tcolPos).trimRight());
+              range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
+              text.push(state.src.slice.apply(state.src, range).trimRight());
             }
           }
-          text = text.filter(String);
-          blockParser = state.md.block;
-          blockState = new blockParser.State(text.join('\n'), state.md, state.env, state.tokens);
-          blockState.blkIndent = text[0].search(/\S/);
-          blockParser.tokenize(blockState, 0, text.length);
+          text = text.filter(String).join('\n');
+          state.md.block.parse(text, state.md, state.env, state.tokens);
         } else {
-          text = state.src.slice.apply(state.src, tcolPos).trim();
+          text = state.src.slice.apply(state.src, range).trim();
           token          = state.push('inline', '', 0);
           token.content  = text;
           token.map      = trToken.meta.map;
           token.children = [];
         }
 
-        token     = state.push('table_column_close', tag, -1);
+        token = state.push('table_column_close', tag, -1);
       }
 
       /* Push in tr and thead/tbody closed tokens */

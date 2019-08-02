@@ -78,9 +78,9 @@ The colspan feature should be still available in multilines.
 .
 A      | B     | C       | D    | E
 -------|-------|---------|------|------
-large  ||        another |||\
-single ||        single  |||\
-row    ||        row     |||
+large  || another        |||\
+single || single         |||\
+row    || row            |||
 .
 <table>
 <thead>
@@ -109,7 +109,7 @@ row</p>
 </table>
 .
 
-(#19) Nested lists in multiline row
+(#19) Nested Lists in Multiline Row
 
 .
 A         | B     |
@@ -142,6 +142,51 @@ text:     | 1     |\
 <td>
 <p>1
 2</p>
+</td>
+</tr>
+</tbody>
+</table>
+.
+
+(#19) Code Blocks in Multiline Row
+
+.
+    code               | describe  |
+-----------------------|-----------|
+```python              |           |\
+for i in range(5):     | Print a   |\
+    print('*' * 5)     | square.   |\
+```                    |           |
+    for i in range(5): | Print a   |\
+        print('*' * i) | triangle. |
+.
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>describe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<pre><code class="language-python">for i in range(5):
+    print('*' * 5)
+</code></pre>
+</td>
+<td>
+<p>Print a
+square.</p>
+</td>
+</tr>
+<tr>
+<td>
+<pre><code>for i in range(5):
+    print('*' * i)</code></pre>
+</td>
+<td>
+<p>Print a
+triangle.</p>
 </td>
 </tr>
 </tbody>
