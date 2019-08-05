@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 3.2.2 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 3.2.3 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 module.exports = function multimd_table_plugin(md, pluginOptions) {
@@ -122,6 +122,8 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
       var lineTextNext, columnsNext, EndOfMultilines;
       var trimItself = Function.prototype.call.bind(String.prototype.trim); // equal to (x => x.trim())
       columns = escapedSplit(lineText.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
+      var initialIndent = /^\s*/.exec(columns[0])[0];
+      var trimRegex = new RegExp('^' + initialIndent + '|\\s+$', 'g');
       columns = columns.map(trimItself);
       do {
         lineTextNext = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
@@ -133,7 +135,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
 
         for (var j = 0; j < columnsNext.length; j++) {
           columns[j] = columns[j] || '';
-          columns[j] += '\n' + columnsNext[j].trim();
+          columns[j] += '\n' + columnsNext[j].replace(trimRegex, '');
         }
         rowInfo.extractedTextLinesCount += 1;
 
