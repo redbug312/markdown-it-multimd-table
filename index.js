@@ -121,6 +121,8 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
       var lineTextNext, columnsNext, EndOfMultilines;
       var trimItself = Function.prototype.call.bind(String.prototype.trim); // equal to (x => x.trim())
       columns = escapedSplit(lineText.replace(/\\$/, '').replace(/^\||([^\\])\|$/g, '$1'));
+      var initialIndent = /^\s*/.exec(columns[0])[0];
+      var trimRegex = new RegExp('^' + initialIndent + '|\\s+$', 'g');
       columns = columns.map(trimItself);
       do {
         lineTextNext = getLine(state, lineNum + rowInfo.extractedTextLinesCount);
@@ -132,7 +134,7 @@ module.exports = function multimd_table_plugin(md, pluginOptions) {
 
         for (var j = 0; j < columnsNext.length; j++) {
           columns[j] = columns[j] || '';
-          columns[j] += '\n' + columnsNext[j].trim();
+          columns[j] += '\n' + columnsNext[j].replace(trimRegex, '');
         }
         rowInfo.extractedTextLinesCount += 1;
 
