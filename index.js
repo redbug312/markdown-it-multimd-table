@@ -126,6 +126,7 @@ module.exports = function multimd_table_plugin(md, options) {
      *   | 0x10100 |    1        0       1     0     0   |
      */
     var tableDFA = new DFA(),
+        grp = 0x10, mtr = -1,
         token, tableToken, trToken,
         colspan, leftToken,
         rowspan, upTokens = [],
@@ -140,7 +141,7 @@ module.exports = function multimd_table_plugin(md, options) {
      * generated here.
      */
     tableToken       = new state.Token('table_open', 'table', 1);
-    tableToken.meta  = { sep: null, cap: null, grp: 0x10, tr: [], mtr: -1 };
+    tableToken.meta  = { sep: null, cap: null, tr: [] };
 
     tableDFA.set_highest_alphabet(0x10000);
     tableDFA.set_initial_state(0x10100);
@@ -172,7 +173,7 @@ module.exports = function multimd_table_plugin(md, options) {
           tableToken.meta.sep     = table_separator(state, false, _line);
           tableToken.meta.sep.map = [ _line, _line + 1 ];
           tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
-          tableToken.meta.grp = 0x10;
+          grp = 0x10;
           break;
         case 0x00100:
         case 0x00010:
@@ -181,26 +182,28 @@ module.exports = function multimd_table_plugin(md, options) {
           trToken.meta      = table_row(state, false, _line);
           trToken.meta.type = _type;
           trToken.meta.map  = [ _line, _line + 1 ];
-          trToken.meta.grp  = tableToken.meta.grp;
+          trToken.meta.grp  = grp;
           tableToken.meta.tr.push(trToken);
-          tableToken.meta.grp = 0x00;
+          grp = 0x00;
           /* Multiline. Merge trTokens as an entire multiline trToken */
           if (options.enableMultilineRows) {
-            if (!trToken.meta.multiline && tableToken.meta.mtr < 0) { break; }
-            if (trToken.meta.multiline && tableToken.meta.mtr >= 0) { break; }
-            if (trToken.meta.multiline) { tableToken.meta.mtr = tableToken.meta.tr.length - 1; break; }
-            token               = tableToken.meta.tr[tableToken.meta.mtr];
-            token.meta.mbounds  = tableToken.meta.tr
-              .slice(tableToken.meta.mtr)
-              .map(function (tk) { return tk.meta.bounds; });
-            token.meta.map[1]   = trToken.meta.map[1];
-            tableToken.meta.tr  = tableToken.meta.tr.slice(0, tableToken.meta.mtr + 1);
-            tableToken.meta.mtr = -1;
+            if (trToken.meta.multiline && mtr < 0) {
+              /* Start line of multiline row. mark this trToken */
+              mtr = tableToken.meta.tr.length - 1;
+            } else if (!trToken.meta.multiline && mtr >= 0) {
+              /* End line of multiline row. merge forward until the marked trToken */
+              token               = tableToken.meta.tr[mtr];
+              token.meta.mbounds  = tableToken.meta.tr
+                .slice(mtr).map(function (tk) { return tk.meta.bounds; });
+              token.meta.map[1]   = trToken.meta.map[1];
+              tableToken.meta.tr  = tableToken.meta.tr.slice(0, mtr + 1);
+              mtr = -1;
+            }
           }
           break;
         case 0x00001:
           tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
-          tableToken.meta.grp = 0x10;
+          grp = 0x10;
           break;
       }
     });
@@ -209,8 +212,9 @@ module.exports = function multimd_table_plugin(md, options) {
     // if (!tableToken.meta.sep) { return false; } // always evaluated true
     if (silent) { return true; }
 
-    /* XXX The last data row cannot be detected? */
+    /* Last data row cannot be detected */
     tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
+
 
     /**
      * Second pass: actually push the tokens into `state.tokens`.
