@@ -1,5 +1,5 @@
 'use strict';
-var NFA = require('./lib/nfa.js');
+var DFA = require('./lib/dfa.js');
 
 module.exports = function multimd_table_plugin(md, options) {
   // TODO be consistent with markdown-it method
@@ -117,14 +117,15 @@ module.exports = function multimd_table_plugin(md, options) {
 
   function table(state, startLine, endLine, silent) {
     /* Regex pseudo code for table:
-     * caption? header+ separator (data+ empty)* data+ caption?
+     *     caption? header+ separator (data+ empty)* data+ caption?
      *
-     * We use NFA with precedences to emulate this plugin.
-     * Noted that separator should have higher precedence than header or data.
+     * We use DFA to emulate this plugin. Types with lower precedence are
+     * set-minus from all the formers.  Noted that separator should have higher
+     * precedence than header or data.
      *   |  state  | caption separator header data empty | --> lower precedence
      *   | 0x10100 |    1        0       1     0     0   |
      */
-    var tableNFA = new NFA(),
+    var tableDFA = new DFA(),
         token, tableToken, trToken,
         colspan, leftToken,
         rowspan, upTokens = [],
@@ -134,32 +135,32 @@ module.exports = function multimd_table_plugin(md, options) {
     if (startLine + 2 > endLine) { return false; }
 
     /**
-     * First pass: validate and collect info into table token.
-     * IR is stored in markdown-it token.meta to be pushed later.
-     * table/tr open tokens are generated here.
+     * First pass: validate and collect info into table token. IR is stored in
+     * markdown-it `token.meta` to be pushed later. table/tr open tokens are
+     * generated here.
      */
     tableToken       = new state.Token('table_open', 'table', 1);
     tableToken.meta  = { sep: null, cap: null, grp: 0x10, tr: [], mtr: -1 };
 
-    tableNFA.set_highest_alphabet(0x10000);
-    tableNFA.set_start_state(0x10100);
-    tableNFA.set_accept_states([ 0x10010, 0x10011, 0x00000 ]);
-    tableNFA.set_match_alphabets({
+    tableDFA.set_highest_alphabet(0x10000);
+    tableDFA.set_initial_state(0x10100);
+    tableDFA.set_accept_states([ 0x10010, 0x10011, 0x00000 ]);
+    tableDFA.set_match_alphabets({
       0x10000: table_caption.bind(this, state, true),
       0x01000: table_separator.bind(this, state, true),
       0x00100: table_row.bind(this, state, true),
       0x00010: table_row.bind(this, state, true),
       0x00001: table_empty.bind(this, state, true)
     });
-    tableNFA.set_transitions({
+    tableDFA.set_transitions({
       0x10100: { 0x10000: 0x00100, 0x00100: 0x01100 },
       0x00100: { 0x00100: 0x01100 },
       0x01100: { 0x01000: 0x10010, 0x00100: 0x01100 },
       0x10010: { 0x10000: 0x00000, 0x00010: 0x10011 },
       0x10011: { 0x10000: 0x00000, 0x00010: 0x10011, 0x00001: 0x10010 }
     });
-    /* Don't mix up NFA `_state` and markdown-it `state` */
-    tableNFA.set_actions(function (_line, _state, _type) {
+    /* Don't mix up DFA `_state` and markdown-it `state` */
+    tableDFA.set_actions(function (_line, _state, _type) {
       switch (_type) {
         case 0x10000:
           if (tableToken.meta.cap) { break; }
@@ -168,7 +169,6 @@ module.exports = function multimd_table_plugin(md, options) {
           tableToken.meta.cap.first = (_line === startLine);
           break;
         case 0x01000:
-          if (silent) { tableNFA.accept(); }
           tableToken.meta.sep     = table_separator(state, false, _line);
           tableToken.meta.sep.map = [ _line, _line + 1 ];
           tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
@@ -177,6 +177,7 @@ module.exports = function multimd_table_plugin(md, options) {
         case 0x00100:
         case 0x00010:
           trToken           = new state.Token('table_row_open', 'tr', 1);
+          trToken.map       = [ _line, _line + 1 ];
           trToken.meta      = table_row(state, false, _line);
           trToken.meta.type = _type;
           trToken.meta.map  = [ _line, _line + 1 ];
@@ -201,21 +202,19 @@ module.exports = function multimd_table_plugin(md, options) {
           tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
           tableToken.meta.grp = 0x10;
           break;
-        case 0x00000:
-          if (_state & 0x00100) { tableNFA.reject(); } // separator not reached
       }
     });
 
-    if (tableNFA.execute(startLine, endLine) === false) { return false; }
-    if (!tableToken.meta.sep) { return false; }
+    if (tableDFA.execute(startLine, endLine) === false) { return false; }
+    // if (!tableToken.meta.sep) { return false; } // always evaluated true
     if (silent) { return true; }
 
     /* XXX The last data row cannot be detected? */
     tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
 
     /**
-     * Second pass: actually push the tokens into state.tokens.
-     * thead/tbody/th/td open tokens and all closed tokens are generated here.
+     * Second pass: actually push the tokens into `state.tokens`.
+     * thead/tbody/th/td open tokens and all closed tokens are generated here;
      * thead/tbody are generally called tgroup; td/th are generally called tcol.
      */
     tableToken.map   = tableLines = [ startLine, 0 ];
@@ -245,7 +244,7 @@ module.exports = function multimd_table_plugin(md, options) {
       if (trToken.meta.grp & 0x10) {
         tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
         token     = state.push('table_group_open', tag, 1);
-        token.map = tgroupLines = [ trToken.meta.map[0], 0 ];
+        token.map = tgroupLines = [ trToken.map[0], 0 ];
       }
       trToken.block = true;
       trToken.level = state.level++;
