@@ -127,7 +127,7 @@ No valid pipes (escaped or fenced) at last line
 .
 First Header  | Second Header | Third Header |
 ------------  | :-----------: | -----------: |
-Content      \|   **Cell**   \|         Cell |
+Content      \|   **Cell**   \`         Cell |
 New section  \|     More     `|`        Data\|
 .
 <table>
@@ -140,7 +140,7 @@ New section  \|     More     `|`        Data\|
 </thead>
 <tbody>
 <tr>
-<td>Content      |   <strong>Cell</strong>   |         Cell</td>
+<td>Content      |   <strong>Cell</strong>   `         Cell</td>
 </tr>
 </tbody>
 </table>
