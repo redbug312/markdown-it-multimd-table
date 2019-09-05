@@ -11,10 +11,10 @@ describe('markdown-it-multimd-table-standard', function () {
   generate(path.join(__dirname, 'fixtures/standard.txt'), {header: true}, md);
 });
 
-describe('Issues', function () {
+describe('markdown-it-multimd-table-unspecified', function () {
   var md = require('markdown-it')()
               .use(require('../'));
-  generate(path.join(__dirname, 'fixtures/issues.txt'), {header: true}, md);
+  generate(path.join(__dirname, 'fixtures/unspecified.txt'), {header: true}, md);
 });
 
 describe('(optional) Multilines', function () {

@@ -273,9 +273,7 @@ New section   |     More      |         Data |</p>
 .
 
 > Requirement 3: Cell content must be on one line only
-
 > Requirement 4: Columns are separated by |
-
 > Requirement 5: The first line of the table, and the alignment/divider line, must start at the beginning of the line
 
 
