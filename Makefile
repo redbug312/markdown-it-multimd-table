@@ -19,7 +19,6 @@ test: ${MODULE_PATH}
 
 coverage: ${MODULE_PATH} lint
 	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha
-	rm -rf ./coverage
 
 test-ci: ${MODULE_PATH} lint
 	# For Github integration test. You should use `make coverage` on local.

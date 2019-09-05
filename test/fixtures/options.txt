@@ -1,8 +1,13 @@
-# Support rows defined on several lines
+---
+desc: Optional features undefined in standard
+---
 
-Requirement: A backslash at the end of a line indicates that in the cell below
-should be treated as in *the same row*
 
+multiline: a backslash at end to join cell contents with the following line
+AGAINST requirement 3
+
+
+Backslashes put behind trailing spaces
 .
 A         | B
 ----------|-------
@@ -37,8 +42,8 @@ text:     | 1     \
 </table>
 .
 
-Another possible form of multilines table.
 
+Backslashes put behind trailing pipes
 .
 A         | B     |
 ----------|-------|
@@ -73,8 +78,8 @@ text:     | 1     |\
 </table>
 .
 
-The colspan feature should be still available in multilines.
 
+Colspan in multi-line rows
 .
 A      | B     | C       | D    | E
 -------|-------|---------|------|------
@@ -109,8 +114,9 @@ row</p>
 </table>
 .
 
-(#19) Nested Lists in Multiline Row
 
+[Issue #19](github.com/RedBug312/markdown-it-multimd-table/issues/19)
+Nested lists in multi-line rows
 .
 A         | B     |
 ----------|-------|
@@ -148,8 +154,9 @@ text:     | 1     |\
 </table>
 .
 
-(#19) Code Blocks in Multiline Row
 
+[Issue #19](github.com/RedBug312/markdown-it-multimd-table/issues/19)
+Fenced code blocks in multi-line rows
 .
     code               | describe  |
 -----------------------|-----------|
@@ -187,6 +194,121 @@ square.</p>
 <td>
 <p>Print a
 triangle.</p>
+</td>
+</tr>
+</tbody>
+</table>
+.
+
+
+rowspan: '^^' in a cell indicates it should be merged with the cell above
+UNDEFINED feature
+
+
+Escape character works on rowspan signs
+.
+  PREP    | TIME
+----------|-------
+  at      | 7:00
+ \^^      |
+.
+<table>
+<thead>
+<tr>
+<th>PREP</th>
+<th>TIME</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>at</td>
+<td>7:00</td>
+</tr>
+<tr>
+<td>^^</td>
+</tr>
+</tbody>
+</table>
+.
+Rowspan and Colspan in one table cell
+.
+| A                |||
+|------|------|------|
+| B    | C    | D    |
+| ^^   | E    | F    |
+| G          || H    |
+| ^^         || I    |
+| ^^         || J    |
+.
+<table>
+<thead>
+<tr>
+<th colspan="3">A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="2">B</td>
+<td>C</td>
+<td>D</td>
+</tr>
+<tr>
+<td>E</td>
+<td>F</td>
+</tr>
+<tr>
+<td colspan="2" rowspan="3">G</td>
+<td>H</td>
+</tr>
+<tr>
+<td>I</td>
+</tr>
+<tr>
+<td>J</td>
+</tr>
+</tbody>
+</table>
+.
+
+
+Rowspan in multi-line rows
+.
+| A                |||
+|------|------|------|
+| B    | C    | D    \
+| B    | C    | D    |
+| ^^   | E    | F    \
+|      | E    | F    |
+.
+<table>
+<thead>
+<tr>
+<th colspan="3">A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="2">
+<p>B
+B</p>
+</td>
+<td>
+<p>C
+C</p>
+</td>
+<td>
+<p>D
+D</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>E
+E</p>
+</td>
+<td>
+<p>F
+F</p>
 </td>
 </tr>
 </tbody>
