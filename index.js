@@ -247,7 +247,7 @@ module.exports = function multimd_table_plugin(md, options) {
       if (trToken.meta.grp & 0x10) {
         tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
         token     = state.push('table_group_open', tag, 1);
-        token.map = tgroupLines = [ trToken.map[0], 0 ];
+        token.map = tgroupLines = [ trToken.map[0], 0 ];  // array ref
       }
       trToken.block = true;
       trToken.level = state.level++;
@@ -284,7 +284,7 @@ module.exports = function multimd_table_plugin(md, options) {
         upTokens[c] = token;
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
-        if (options.enableMultilineRows && trToken.meta.multiline) {
+        if (options.enableMultilineRows && trToken.meta.multiline && trToken.meta.mbounds) {
           text = [ text.trimRight() ];
           for (b = 1; b < trToken.meta.mbounds.length; b++) {
             if (c < trToken.meta.mbounds[b].length - 1) {

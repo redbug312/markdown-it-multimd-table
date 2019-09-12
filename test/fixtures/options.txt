@@ -79,6 +79,45 @@ text:     | 1     |\
 .
 
 
+(corner case; ensure not to crash the whole parser)
+Backslashes put at end of thead/tbody
+.
+A         | B     |\
+----------|-------|
+text:     | 1     |\
+- over    | 2     |\
+- several |       |\
+- lines   |       |\
+.
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>text:</td>
+<td>1</td>
+</tr>
+<tr>
+<td>- over</td>
+<td>2</td>
+</tr>
+<tr>
+<td>- several</td>
+<td></td>
+</tr>
+<tr>
+<td>- lines</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+.
+
+
 Colspan in multi-line rows
 .
 A      | B     | C       | D    | E
