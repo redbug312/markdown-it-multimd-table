@@ -96,7 +96,7 @@ module.exports = function multimd_table_plugin(md, options) {
       if (!sepRE.test(text)) { return false; }
 
       meta.wraps.push(text.charCodeAt(text.length - 1) === 0x2B/* + */);
-      align = ((text.charCodeAt(0) === 0x3A/* : */) << 4) +
+      align = ((text.charCodeAt(0) === 0x3A/* : */) << 4) |
                (text.charCodeAt(text.length - 1 - meta.wraps[c]) === 0x3A);
       switch (align) {
         case 0x00: meta.aligns.push('');       break;
@@ -181,7 +181,6 @@ module.exports = function multimd_table_plugin(md, options) {
           trToken.map       = [ _line, _line + 1 ];
           trToken.meta      = table_row(state, false, _line);
           trToken.meta.type = _type;
-          trToken.meta.map  = [ _line, _line + 1 ];
           trToken.meta.grp  = grp;
           tableToken.meta.tr.push(trToken);
           grp = 0x00;
@@ -195,7 +194,7 @@ module.exports = function multimd_table_plugin(md, options) {
               token               = tableToken.meta.tr[mtr];
               token.meta.mbounds  = tableToken.meta.tr
                 .slice(mtr).map(function (tk) { return tk.meta.bounds; });
-              token.meta.map[1]   = trToken.meta.map[1];
+              token.map[1]        = trToken.map[1];
               tableToken.meta.tr  = tableToken.meta.tr.slice(0, mtr + 1);
               mtr = -1;
             }
@@ -273,7 +272,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
         tag = (trToken.meta.type === 0x00100) ? 'th' : 'td';
         token       = state.push('table_column_open', tag, 1);
-        token.map   = trToken.meta.map;
+        token.map   = trToken.map;
         token.attrs = [];
         if (tableToken.meta.sep.aligns[c]) {
           token.attrs.push([ 'style', 'text-align:' + tableToken.meta.sep.aligns[c] ]);
@@ -298,7 +297,7 @@ module.exports = function multimd_table_plugin(md, options) {
         } else {
           token          = state.push('inline', '', 0);
           token.content  = text.trim();
-          token.map      = trToken.meta.map;
+          token.map      = trToken.map;
           token.children = [];
         }
 
@@ -310,7 +309,7 @@ module.exports = function multimd_table_plugin(md, options) {
       if (trToken.meta.grp & 0x01) {
         tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
         token = state.push('table_group_close', tag, -1);
-        tgroupLines[1] = trToken.meta.map[1];
+        tgroupLines[1] = trToken.map[1];
       }
     }
 
