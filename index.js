@@ -248,6 +248,7 @@ module.exports = function multimd_table_plugin(md, options) {
         tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
         token     = state.push('table_group_open', tag, 1);
         token.map = tgroupLines = [ trToken.map[0], 0 ];  // array ref
+        upTokens  = [];
       }
       trToken.block = true;
       trToken.level = state.level++;
@@ -263,8 +264,7 @@ module.exports = function multimd_table_plugin(md, options) {
           leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
           continue;
         }
-        if (options.enableRowspan && text.trim() === '^^') {
-          upTokens[c] = upTokens[c] || new state.Token('table_fake_tcol_open', '', 1);
+        if (options.enableRowspan && upTokens[c] && text.trim() === '^^') {
           rowspan = upTokens[c].attrGet('rowspan');
           upTokens[c].attrSet('rowspan', rowspan === null ? 2 : rowspan + 1);
           continue;
@@ -280,8 +280,7 @@ module.exports = function multimd_table_plugin(md, options) {
         if (tableToken.meta.sep.wraps[c]) {
           token.attrs.push([ 'class', 'extend' ]);
         }
-        leftToken = token;
-        upTokens[c] = token;
+        leftToken = upTokens[c] = token;
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
         if (options.enableMultilineRows && trToken.meta.multiline && trToken.meta.mbounds) {

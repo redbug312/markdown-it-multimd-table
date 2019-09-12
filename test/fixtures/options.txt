@@ -244,31 +244,6 @@ rowspan: '^^' in a cell indicates it should be merged with the cell above
 UNDEFINED feature
 
 
-Escape character works on rowspan signs
-.
-  PREP    | TIME
-----------|-------
-  at      | 7:00
- \^^      |
-.
-<table>
-<thead>
-<tr>
-<th>PREP</th>
-<th>TIME</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>at</td>
-<td>7:00</td>
-</tr>
-<tr>
-<td>^^</td>
-</tr>
-</tbody>
-</table>
-.
 Rowspan and Colspan in one table cell
 .
 | A                |||
@@ -309,6 +284,34 @@ Rowspan and Colspan in one table cell
 </table>
 .
 
+Rowspan at first line
+.
+| ^^   | A    | B    |
+|------|------|------|
+| ^^   | C    | D    |
+| ^^   | E    | F    |
+.
+<table>
+<thead>
+<tr>
+<th>^^</th>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="2">^^</td>
+<td>C</td>
+<td>D</td>
+</tr>
+<tr>
+<td>E</td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+.
 
 Rowspan in multi-line rows
 .
@@ -349,6 +352,32 @@ E</p>
 <p>F
 F</p>
 </td>
+</tr>
+</tbody>
+</table>
+.
+
+Escape character works on rowspan signs
+.
+  PREP    | TIME
+----------|-------
+  at      | 7:00
+ \^^      |
+.
+<table>
+<thead>
+<tr>
+<th>PREP</th>
+<th>TIME</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>at</td>
+<td>7:00</td>
+</tr>
+<tr>
+<td>^^</td>
 </tr>
 </tbody>
 </table>
