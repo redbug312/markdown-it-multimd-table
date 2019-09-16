@@ -285,10 +285,10 @@ module.exports = function multimd_table_plugin(md, options) {
         if (options.enableMultilineRows && trToken.meta.multiline && trToken.meta.mbounds) {
           text = [ text.trimRight() ];
           for (b = 1; b < trToken.meta.mbounds.length; b++) {
-            if (c < trToken.meta.mbounds[b].length - 1) {
-              range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
-              text.push(state.src.slice.apply(state.src, range).trimRight());
-            }
+            /* Line with N pipes has cells indexed from 0 to N-2 */
+            if (c > trToken.meta.mbounds[b].length - 2) { continue; }
+            range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
+            text.push(state.src.slice.apply(state.src, range).trimRight());
           }
           state.md.block.parse(text.join('\n'), state.md, state.env, state.tokens);
         } else {
