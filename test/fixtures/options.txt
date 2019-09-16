@@ -79,6 +79,39 @@ text:     | 1     |\
 .
 
 
+[Issue #22](github.com/RedBug312/markdown-it-multimd-table/issues/22)
+Paragraphs inside multi-line rows
+.
+| A   | B   |
+| --- | --- |
+| 1   | 2   | \
+|     | 3   | \
+|     |     | \
+|     | 4   |
+.
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<p>1</p>
+</td>
+<td>
+<p>2
+3</p>
+<p>4</p>
+</td>
+</tr>
+</tbody>
+</table>
+.
+
+
 (corner case; ensure not to crash the whole parser)
 Backslashes put at end of thead/tbody
 .

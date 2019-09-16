@@ -88,7 +88,6 @@ module.exports = function multimd_table_plugin(md, options) {
 
     /* Only separator needs to check indents */
     if (state.sCount[line] - state.blkIndent >= 4) { return false; }
-
     if (bounds.length === 0) { return false; }
 
     for (c = 0; c < bounds.length - 1; c++) {
@@ -291,8 +290,7 @@ module.exports = function multimd_table_plugin(md, options) {
               text.push(state.src.slice.apply(state.src, range).trimRight());
             }
           }
-          text = text.filter(String).join('\n');
-          state.md.block.parse(text, state.md, state.env, state.tokens);
+          state.md.block.parse(text.join('\n'), state.md, state.env, state.tokens);
         } else {
           token          = state.push('inline', '', 0);
           token.content  = text.trim();
