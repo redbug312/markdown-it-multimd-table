@@ -5,27 +5,32 @@
 MultiMarkdown table syntax plugin for markdown-it markdown parser
 
 ## Intro
-In general Markdown syntax, we have to write raw HTML tags when `colspan` attribute is needed. Luckily, I found that [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/) had defined complete and clear rules for advanced Markdown table syntax, and compatible to general Markdown table syntax.
+When writing table in Markdown syntax, we have to fallback to write raw HTML tags, if we just need some advanced attribute like `colspan`.
+[MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/) is an extended Markdown spec covering fancy features.
+It has defined some complete and clear rules for advanced Markdown table syntax, and aims to be compatible to basic table syntax as possible.
 
-So I extend the table parser in markdown-it to support MultiMarkdown table syntax. For now, the following features are provided:
+[markdown-it](https://markdown-it.github.io/) is a powerful and widely-used Markdown compiler, in native it supports basic table syntax only.
+It allows plugins to expand it capability, and this plugin replaced the original table parser in markdown-it to support MultiMarkdown table syntax.
+
+For now, these extended features are provided:
 - Cells spanning multiple columns
 - Cells spanning multiple rows (optional)
-- Grouped table headers
-- Grouped table rows
-- Table captions
-- Lists in table cell (optional)
-- Line breaks in table cells (optional)
-- Not-required header (optional)
+- Grouped table header rows or data rows
+- Table caption above or below the table
+- Blocked elements (lists, codes, paragraphs...) in table (optional)
+- Table header not required (optional)
 
-Noted that the plugin might behave differently from MultiMarkdown in some edge cases; since the plugin aims just to follow the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables).
+Noted: the plugin is not a re-written of MultiMarkdown to deploy on markdown-it, it will generate HTML different from MultiMarkdown official compiler in some corner cases.
+This plugin try to follow the rule defined in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables) as possible.
+If some case is reasonable but behaves strangely, please pose an issue for that.
 
 ## Usage
 ```javascript
-// default mode
+// defaults
 var md = require('markdown-it')()
             .use(require('markdown-it-multimd-table'));
 
-// full options list (defaults)
+// full options list (same to defaults)
 var md = require('markdown-it')()
             .use(require('markdown-it-multimd-table'), {
               multiline:  false,
@@ -102,9 +107,9 @@ And you will see the rendered table in the browser:
 <caption id="prototypetable">Prototype table</caption>
 </table>
 
-### Multi-line (optional)
+### Multiline (optional)
 
-A backslash at end to join cell contents with the following lines.
+A backslash at end to join cell contents with the following lines.<br>
 This feature is contributed by [Lucas-C](https://github.com/Lucas-C).
 
 ```markdown
@@ -116,7 +121,7 @@ List:        | More  \
 - lines      |
 ```
 
-Would be parsed as
+If this option is enabled, code above would be parsed as:
 
 <table>
 <thead>
@@ -145,7 +150,7 @@ data</p>
 
 ### Rowspan (optional)
 
-`^^` in a cell indicates it should be merged with the cell above.
+`^^` in a cell indicates it should be merged with the cell above.<br>
 This feature is contributed by [pmccloghrylaing](https://github.com/pmccloghrylaing).
 
 ```markdown
@@ -156,7 +161,7 @@ Merged       | Cell 1
 ^^           | Cell 3
 ```
 
-Would be parsed as
+If this option is enabled, code above would be parsed as:
 
 <table>
 <thead>
@@ -180,6 +185,7 @@ Would be parsed as
 </table>
 
 ### Headerless (optional)
+
 Table header can be eliminated.
 
 ```markdown
@@ -187,7 +193,7 @@ Table header can be eliminated.
 |Headerless|table|
 ```
 
-Would be parsed as
+If this option is enabled, code above would be parsed as:
 
 <table>
 <tbody>
