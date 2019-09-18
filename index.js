@@ -65,7 +65,7 @@ module.exports = function multimd_table_plugin(md, options) {
     meta.bounds = bounds;
 
     /* Multiline. Scan boundaries again since it's very complicated */
-    if (options.enableMultilineRows) {
+    if (options.multiline) {
       start = state.bMarks[line] + state.tShift[line];
       pos = state.eMarks[line] - 1; /* where backslash should be */
       meta.multiline = (state.src.charCodeAt(pos) === 0x5C/* \ */);
@@ -192,7 +192,7 @@ module.exports = function multimd_table_plugin(md, options) {
           grp               = 0x00;
           tableToken.meta.tr.push(trToken);
           /* Multiline. Merge trTokens as an entire multiline trToken */
-          if (options.enableMultilineRows) {
+          if (options.multiline) {
             if (trToken.meta.multiline && mtr < 0) {
               /* Start line of multiline row. mark this trToken */
               mtr = tableToken.meta.tr.length - 1;
@@ -271,7 +271,7 @@ module.exports = function multimd_table_plugin(md, options) {
           leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
           continue;
         }
-        if (options.enableRowspan && upTokens[c] && text.trim() === '^^') {
+        if (options.rowspan && upTokens[c] && text.trim() === '^^') {
           rowspan = upTokens[c].attrGet('rowspan');
           upTokens[c].attrSet('rowspan', rowspan === null ? 2 : rowspan + 1);
           continue;
@@ -290,7 +290,7 @@ module.exports = function multimd_table_plugin(md, options) {
         leftToken = upTokens[c] = token;
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
-        if (options.enableMultilineRows && trToken.meta.multiline && trToken.meta.mbounds) {
+        if (options.multiline && trToken.meta.multiline && trToken.meta.mbounds) {
           text = [ text.trimRight() ];
           for (b = 1; b < trToken.meta.mbounds.length; b++) {
             /* Line with N bounds has cells indexed from 0 to N-2 */

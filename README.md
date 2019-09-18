@@ -15,13 +15,23 @@ So I extend the table parser in markdown-it to support MultiMarkdown table synta
 - Table captions
 - Lists in table cell (optional)
 - Line breaks in table cells (optional)
+- Not-required header (optional)
 
 Noted that the plugin might behave differently from MultiMarkdown in some edge cases; since the plugin aims just to follow the rules in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables).
 
 ## Usage
 ```javascript
+// default mode
 var md = require('markdown-it')()
             .use(require('markdown-it-multimd-table'));
+
+// full options list (defaults)
+var md = require('markdown-it')()
+            .use(require('markdown-it-multimd-table'), {
+              multiline:  false,
+              rowspan:    false,
+              headerless: false,
+            });
 
 md.render(/*...*/)
 ```
@@ -92,9 +102,9 @@ And you will see the rendered table in the browser:
 <caption id="prototypetable">Prototype table</caption>
 </table>
 
-### Multiple lines of row (optional)
+### Multi-line (optional)
 
-Put backslashes at end to make the table rows parsed as multiple lines.
+A backslash at end to join cell contents with the following lines.
 This feature is contributed by [Lucas-C](https://github.com/Lucas-C).
 
 ```markdown
@@ -106,7 +116,7 @@ List:        | More  \
 - lines      |
 ```
 
-would be parsed as
+Would be parsed as
 
 <table>
 <thead>
@@ -133,16 +143,9 @@ data</p>
 </tbody>
 </table>
 
-And here's how you enable the feature.
-
-```javascript
-var md = require('markdown-it')()
-            .use(require('markdown-it-multimd-table'), {enableMultilineRows: true});
-```
-
 ### Rowspan (optional)
 
-To create cells with a rowspan mark the cells to merge up with `^^`.
+`^^` in a cell indicates it should be merged with the cell above.
 This feature is contributed by [pmccloghrylaing](https://github.com/pmccloghrylaing).
 
 ```markdown
@@ -153,7 +156,7 @@ Merged       | Cell 1
 ^^           | Cell 3
 ```
 
-would be parsed as
+Would be parsed as
 
 <table>
 <thead>
@@ -176,12 +179,24 @@ would be parsed as
 </tbody>
 </table>
 
-And here's how you enable the feature.
+### Headerless (optional)
+Table header can be eliminated.
 
-```javascript
-var md = require('markdown-it')()
-            .use(require('markdown-it-multimd-table'), {enableRowspan: true});
+```markdown
+|----------|-----|
+|Headerless|table|
 ```
+
+Would be parsed as
+
+<table>
+<tbody>
+<tr>
+<td>Headerless</td>
+<td>table</td>
+</tr>
+</tbody>
+</table>
 
 ## Credits
 * [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight markup processor to produce HTML, LaTeX, and more.

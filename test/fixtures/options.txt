@@ -417,7 +417,7 @@ Escape character works on rowspan signs
 .
 
 
-headerless: thead can be eliminated
+headerless: table header can be eliminated
 AGAINST requirement 2
 
 
