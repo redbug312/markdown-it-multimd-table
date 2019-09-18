@@ -159,6 +159,14 @@ module.exports = function multimd_table_plugin(md, options) {
       0x10010: { 0x10000: 0x00000, 0x00010: 0x10011 },
       0x10011: { 0x10000: 0x00000, 0x00010: 0x10011, 0x00001: 0x10010 }
     });
+    if (options.headerless) {
+      tableDFA.set_initial_state(0x11100);
+      tableDFA.update_transition(0x11100,
+        { 0x10000: 0x01100, 0x01000: 0x10010, 0x00100: 0x01100 }
+      );
+      trToken      = new state.Token('table_fake_header_row', 'tr', 1);
+      trToken.meta = Object();  // avoid trToken.meta.grp throws exception
+    }
     /* Don't mix up DFA `_state` and markdown-it `state` */
     tableDFA.set_actions(function (_line, _state, _type) {
       switch (_type) {
@@ -171,8 +179,8 @@ module.exports = function multimd_table_plugin(md, options) {
         case 0x01000:
           tableToken.meta.sep     = table_separator(state, false, _line);
           tableToken.meta.sep.map = [ _line, _line + 1 ];
-          tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
-          grp = 0x10;
+          trToken.meta.grp |= 0x01;  // previously assigned at case 0x00110
+          grp               = 0x10;
           break;
         case 0x00100:
         case 0x00010:
@@ -181,8 +189,8 @@ module.exports = function multimd_table_plugin(md, options) {
           trToken.meta      = table_row(state, false, _line);
           trToken.meta.type = _type;
           trToken.meta.grp  = grp;
+          grp               = 0x00;
           tableToken.meta.tr.push(trToken);
-          grp = 0x00;
           /* Multiline. Merge trTokens as an entire multiline trToken */
           if (options.enableMultilineRows) {
             if (trToken.meta.multiline && mtr < 0) {
@@ -200,8 +208,8 @@ module.exports = function multimd_table_plugin(md, options) {
           }
           break;
         case 0x00001:
-          tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
-          grp = 0x10;
+          trToken.meta.grp |= 0x01;
+          grp               = 0x10;
           break;
       }
     });
@@ -210,7 +218,7 @@ module.exports = function multimd_table_plugin(md, options) {
     // if (!tableToken.meta.sep) { return false; } // always evaluated true
     if (silent) { return true; }
 
-    /* Last data row cannot be detected */
+    /* Last data row cannot be detected. not stored to trToken outside? */
     tableToken.meta.tr[tableToken.meta.tr.length - 1].meta.grp |= 0x01;
 
 
@@ -285,7 +293,7 @@ module.exports = function multimd_table_plugin(md, options) {
         if (options.enableMultilineRows && trToken.meta.multiline && trToken.meta.mbounds) {
           text = [ text.trimRight() ];
           for (b = 1; b < trToken.meta.mbounds.length; b++) {
-            /* Line with N pipes has cells indexed from 0 to N-2 */
+            /* Line with N bounds has cells indexed from 0 to N-2 */
             if (c > trToken.meta.mbounds[b].length - 2) { continue; }
             range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
             text.push(state.src.slice.apply(state.src, range).trimRight());

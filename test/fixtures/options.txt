@@ -415,3 +415,32 @@ Escape character works on rowspan signs
 </tbody>
 </table>
 .
+
+
+headerless: thead can be eliminated
+AGAINST requirement 2
+
+
+[Issue #21](github.com/RedBug312/markdown-it-multimd-table/issues/21)
+Simplest table without header
+.
+|----------|-----|
+|Headerless|table|
+.
+<table>
+<tbody>
+<tr>
+<td>Headerless</td>
+<td>table</td>
+</tr>
+</tbody>
+</table>
+.
+
+(corner case; table must have 2 more lines)
+Table with separator only failed
+.
+|---|---|---|
+.
+<p>|---|---|---|</p>
+.
