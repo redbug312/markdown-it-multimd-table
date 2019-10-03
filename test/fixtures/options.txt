@@ -444,3 +444,13 @@ Table with separator only failed
 .
 <p>|---|---|---|</p>
 .
+
+(corner case; ensure not to crash the whole parser)
+Table with separator and empty data row
+.
+|---|---|---|
+|
+.
+<p>|---|---|---|
+|</p>
+.

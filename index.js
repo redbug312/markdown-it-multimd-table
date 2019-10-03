@@ -216,6 +216,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
     if (tableDFA.execute(startLine, endLine) === false) { return false; }
     // if (!tableToken.meta.sep) { return false; } // always evaluated true
+    if (!tableToken.meta.tr.length) { return false; } // false under headerless corner case
     if (silent) { return true; }
 
     /* Last data row cannot be detected. not stored to trToken outside? */
