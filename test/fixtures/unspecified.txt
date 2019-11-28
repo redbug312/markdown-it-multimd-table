@@ -1,0 +1,65 @@
+---
+desc: Corner cases unspecified in standard
+---
+
+
+[Issue #1](github.com/RedBug312/markdown-it-multimd-table/issues/1)
+
+
+Indented code disabled in table data row
+.
+A     | B
+------|--
+     0|1
+.
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+.
+
+
+Indented code disabled in table header row
+.
+     A|B
+-----:|:-
+     0|1
+.
+<table>
+<thead>
+<tr>
+<th style="text-align:right">A</th>
+<th style="text-align:left">B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">0</td>
+<td style="text-align:left">1</td>
+</tr>
+</tbody>
+</table>
+.
+
+
+Indented code enabled in separator
+.
+     A|B
+    -:|:-
+     0|1
+.
+<pre><code> A|B
+-:|:-
+ 0|1
+</code></pre>
+.

@@ -14,12 +14,11 @@ ${MODULE_PATH}:
 lint: ${MODULE_PATH}
 	${MODULE_PATH}/eslint .
 
-test: ${MODULE_PATH} lint
+test: ${MODULE_PATH}
 	${MODULE_PATH}/mocha -R spec
 
-coverage: ${MODULE_PATH}
+coverage: ${MODULE_PATH} lint
 	${MODULE_PATH}/istanbul cover ${MODULE_PATH}/_mocha
-	rm -rf ./coverage
 
 test-ci: ${MODULE_PATH} lint
 	# For Github integration test. You should use `make coverage` on local.
@@ -27,7 +26,7 @@ test-ci: ${MODULE_PATH} lint
 	cat ./coverage/lcov.info | ${MODULE_PATH}/coveralls
 	rm -rf ./coverage
 
-browserify: ${MODULE_PATH}
+browserify: ${MODULE_PATH} lint test
 	# Browserify
 	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */"; \
 		${MODULE_PATH}/browserify . -s markdownitMultimdTable \
