@@ -7,7 +7,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
   function scan_bound_indices(state, line) {
     var start = state.bMarks[line], /* no tShift to detect \n */
-        max = state.eMarks[line],
+        max = state.skipSpacesBack(state.eMarks[line], start),
         bounds = [], pos,
         escape = false, code = false;
 
