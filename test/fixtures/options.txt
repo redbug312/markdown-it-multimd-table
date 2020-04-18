@@ -456,7 +456,7 @@ Table with separator and empty data row
 .
 
 
-colspan_syntax: alternative colspan syntax to trick reformatters
+colspanSyntax: alternative colspan syntax to trick reformatters
 AGAINST note 4
 
 
