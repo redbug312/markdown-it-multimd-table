@@ -20,9 +20,10 @@ describe('markdown-it-multimd-table-unspecified', function () {
 describe('markdown-it-multimd-table-options', function () {
   var md = require('markdown-it')()
               .use(require('../'), {
-                multiline:  true,
-                rowspan:    true,
-                headerless: true,
+                multiline:      true,
+                rowspan:        true,
+                headerless:     true,
+                colspan_syntax: '<<',
               });
   generate(path.join(__dirname, 'fixtures/options.txt'), {header: true}, md);
 });

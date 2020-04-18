@@ -273,6 +273,11 @@ module.exports = function multimd_table_plugin(md, options) {
           leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
           continue;
         }
+        if (options.colspan_syntax && text.trim() === options.colspan_syntax) {
+          colspan = leftToken.attrGet('colspan');
+          leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
+          continue;
+        }
         if (options.rowspan && upTokens[c] && text.trim() === '^^') {
           rowspan = upTokens[c].attrGet('rowspan');
           upTokens[c].attrSet('rowspan', rowspan === null ? 2 : rowspan + 1);
