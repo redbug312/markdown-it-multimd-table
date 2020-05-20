@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.0.1 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 4.0.2 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 // constructor
@@ -260,7 +260,7 @@ module.exports = function multimd_table_plugin(md, options) {
           break;
         case 0x00100:
         case 0x00010:
-          trToken           = new state.Token('table_row_open', 'tr', 1);
+          trToken           = new state.Token('tr_open', 'tr', 1);
           trToken.map       = [ _line, _line + 1 ];
           trToken.meta      = table_row(state, false, _line);
           trToken.meta.type = _type;
@@ -330,7 +330,7 @@ module.exports = function multimd_table_plugin(md, options) {
       // console.log(trToken.meta); // for test
       if (trToken.meta.grp & 0x10) {
         tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
-        token     = state.push('table_group_open', tag, 1);
+        token     = state.push(tag + '_open', tag, 1);
         token.map = tgroupLines = [ trToken.map[0], 0 ];  // array ref
         upTokens  = [];
       }
@@ -355,7 +355,7 @@ module.exports = function multimd_table_plugin(md, options) {
         }
 
         tag = (trToken.meta.type === 0x00100) ? 'th' : 'td';
-        token       = state.push('table_column_open', tag, 1);
+        token       = state.push(tag + '_open', tag, 1);
         token.map   = trToken.map;
         token.attrs = [];
         if (tableToken.meta.sep.aligns[c]) {
@@ -383,14 +383,14 @@ module.exports = function multimd_table_plugin(md, options) {
           token.children = [];
         }
 
-        token = state.push('table_column_close', tag, -1);
+        token = state.push(tag + '_close', tag, -1);
       }
 
       /* Push in tr and thead/tbody closed tokens */
       state.push('tr_close', 'tr', -1);
       if (trToken.meta.grp & 0x01) {
         tag = (trToken.meta.type === 0x00100) ? 'thead' : 'tbody';
-        token = state.push('table_group_close', tag, -1);
+        token = state.push(tag + '_close', tag, -1);
         tgroupLines[1] = trToken.map[1];
       }
     }
