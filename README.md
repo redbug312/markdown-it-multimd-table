@@ -5,32 +5,44 @@
 MultiMarkdown table syntax plugin for markdown-it markdown parser
 
 ## Intro
-When writing table in Markdown syntax, we have to fallback to write raw HTML tags, if we just need some advanced attribute like `colspan`.
-[MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/) is an extended Markdown spec covering fancy features.
-It has defined some complete and clear rules for advanced Markdown table syntax, and aims to be compatible to basic table syntax as possible.
 
-[markdown-it](https://markdown-it.github.io/) is a powerful and widely-used Markdown compiler, in native it supports basic table syntax only.
-It allows plugins to expand it capability, and this plugin replaced the original table parser in markdown-it to support MultiMarkdown table syntax.
+Markdown specs defines only the basics for tables. When users want common
+features like `colspan`, they must fallback to raw HTML. And writing tables in
+HTML is truly *lengthy and troublesome*.
 
-For now, these extended features are provided:
-- Cells spanning multiple columns
-- Cells spanning multiple rows (optional)
-- Grouped table header rows or data rows
-- Table caption above or below the table
-- Blocked elements (lists, codes, paragraphs...) in table (optional)
-- Table header not required (optional)
+This plugin extends markdown-it with MultiMarkdown table syntax.
+[MultiMarkdown][mmd6] is an extended Markdown spec. It defines clear rules for
+advanced Markdown table syntax, while being consistent with original pipe
+table; [markdown-it][mdit] is a popular Markdown parser in JavaScript and
+allows plugins extending itself.
 
-Noted: the plugin is not a re-written of MultiMarkdown to deploy on markdown-it, it will generate HTML different from MultiMarkdown official compiler in some corner cases.
-This plugin try to follow the rule defined in [MultiMarkdown User's Guide](http://fletcher.github.io/MultiMarkdown-5/tables) as possible.
-If some case is reasonable but behaves strangely, please pose an issue for that.
+[mmd6]: https://fletcher.github.io/MultiMarkdown-6/
+[mdit]: https://markdown-it.github.io/
+
+The features are provided:
+- Cell spans over columns
+- Cell spans over rows (optional)
+- Divide rows into sections
+- Multiple table headers
+- Table caption
+- Block-level elements such as lists, codes... (optional)
+- Omitted table header (optional)
+
+Noted that the plugin is not a re-written of MultiMarkdown. This plugin will
+behave differently from the official compiler, but doing its best to obey rules
+defined in [MultiMarkdown User's Guide](mmd6-table). Please pose an issue if
+there are weird results for sensible inputs.
+
+[mmd6-table]: https://fletcher.github.io/MultiMarkdown-6/syntax/tables.html
 
 ## Usage
+
 ```javascript
 // defaults
 var md = require('markdown-it')()
             .use(require('markdown-it-multimd-table'));
 
-// full options list (same to defaults)
+// full options list (equivalent to defaults)
 var md = require('markdown-it')()
             .use(require('markdown-it-multimd-table'), {
               multiline:  false,
@@ -41,7 +53,7 @@ var md = require('markdown-it')()
 md.render(/*...*/)
 ```
 
-To simply test this plugin, you can do these in terminal:
+For a quick demo:
 ```javascript
 $ mkdir markdown-it-multimd-table
 $ cd markdown-it-multimd-table
@@ -68,7 +80,7 @@ $ node test.js > test.html
 $ firefox test.html
 ```
 
-And you will see the rendered table in the browser:
+Here's the table expected on browser:
 
 <table>
 <thead>
@@ -107,14 +119,13 @@ And you will see the rendered table in the browser:
 <caption id="prototypetable">Prototype table</caption>
 </table>
 
-Noted that GitHub filters out `style` property, so the example displays with
-the obsolete `align` property. But in actual this plugin outputs `style`
-property with `text-align` CSS attribute.
+Noted that GitHub filters out `style` property, so the example uses `align` the
+obsolete one. However it outputs `style="text-align: ..."` in actual.
 
 ### Multiline (optional)
 
-A backslash at end to join cell contents with the following lines.<br>
-This feature is contributed by [Lucas-C](https://github.com/Lucas-C).
+Backslash at end merges with line content below.<br>
+Feature contributed by [Lucas-C](https://github.com/Lucas-C).
 
 ```markdown
 |   Markdown   | Rendered HTML |
@@ -128,7 +139,7 @@ This feature is contributed by [Lucas-C](https://github.com/Lucas-C).
 |    ```       | ```           |
 ```
 
-If this option is enabled, code above would be parsed as:
+This is parsed below when the option enabled:
 
 <table>
 <thead>
@@ -175,8 +186,8 @@ If this option is enabled, code above would be parsed as:
 
 ### Rowspan (optional)
 
-`^^` in a cell indicates it should be merged with the cell above.<br>
-This feature is contributed by [pmccloghrylaing](https://github.com/pmccloghrylaing).
+`^^` indicates cells being merged above.<br>
+Feature contributed by [pmccloghrylaing](https://github.com/pmccloghrylaing).
 
 ```markdown
 Stage | Direct Products | ATP Yields
@@ -191,7 +202,7 @@ Citric acid cycle | 2 ATP ||
 [Net ATP yields per hexose]
 ```
 
-If this option is enabled, code above would be parsed as:
+This is parsed below when the option enabled:
 
 <table>
 <caption id="netatpyieldsperhexose">Net ATP yields per hexose</caption>
@@ -250,7 +261,7 @@ Table header can be eliminated.
 |♖|♘|♗|♕|♔|  |  |♖|
 ```
 
-If this option is enabled, code above would be parsed as:
+This is parsed below when the option enabled:
 
 <table>
 <tbody>
@@ -339,8 +350,11 @@ If this option is enabled, code above would be parsed as:
 
 ## Credits
 
-* [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight markup processor to produce HTML, LaTeX, and more.
-* [markdown-it](https://markdown-it.github.io/), Markdown parser, done right. 100% CommonMark support, extensions, syntax plugins & high speed.
+* [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight
+  markup processor to produce HTML, LaTeX, and more.
+* [markdown-it](https://markdown-it.github.io/), Markdown parser, done right.
+  100% CommonMark support, extensions, syntax plugins & high speed.
 
 ## License
+
 This software is licensed under the [MIT license](https://opensource.org/licenses/mit-license.php) © RedBug312.
