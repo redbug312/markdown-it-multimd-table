@@ -1,3 +1,5 @@
+.PHONY: lint test coverage test-ci browserify
+
 NPM_PACKAGE := $(shell node -e 'process.stdout.write(require("./package.json").name)')
 NPM_VERSION := $(shell node -e 'process.stdout.write(require("./package.json").version)')
 
@@ -8,8 +10,10 @@ GITHUB_PROJ := https://github.com/RedBug312/markdown-it-multimd-table
 MODULE_PATH := ./node_modules/.bin
 
 
-${MODULE_PATH}:
+${MODULE_PATH}: package.json
 	npm install --save-dev
+	touch $@  # update timestamp
+
 
 lint: ${MODULE_PATH}
 	${MODULE_PATH}/eslint .
@@ -35,5 +39,3 @@ browserify: ${MODULE_PATH} lint test
 	${MODULE_PATH}/terser dist/markdown-it-multimd-table.js -b beautify=false,ascii_only=true -c -m \
 		--preamble "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" \
 		> dist/markdown-it-multimd-table.min.js
-
-.PHONY: lint test coverage test-ci browserify
