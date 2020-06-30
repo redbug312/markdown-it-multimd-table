@@ -7,6 +7,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
   function scan_bound_indices(state, line) {
     var start = state.bMarks[line], /* no tShift to detect \n */
+        head = state.bMarks[line] + state.tShift[line],
         max = state.skipSpacesBack(state.eMarks[line], start),
         bounds = [], pos,
         escape = false, code = false;
@@ -32,7 +33,7 @@ module.exports = function multimd_table_plugin(md, options) {
     if (bounds.length === 0) return bounds;
 
     /* Pad in newline characters on last and this line */
-    if (bounds[0] > start) { bounds.unshift(start - 1); }
+    if (bounds[0] > head) { bounds.unshift(start - 1); }
     if (bounds[bounds.length - 1] < max - 1) { bounds.push(max); }
 
     return bounds;
