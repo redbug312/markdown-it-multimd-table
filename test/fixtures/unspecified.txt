@@ -112,3 +112,64 @@ A|B
 </tbody>
 </table>
 .
+
+
+[Issue #32](github.com/RedBug312/markdown-it-multimd-table/issues/32)
+
+
+Table indented under lists with empty line
+.
+- list item
+
+  | Col1  | Col2 |
+  | ----- | ---- |
+  | Col1  | Col2 |
+.
+<ul>
+<li>
+<p>list item</p>
+<table>
+<thead>
+<tr>
+<th>Col1</th>
+<th>Col2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Col1</td>
+<td>Col2</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+.
+
+
+Table indented under lists without empty line
+.
+- list item
+  | Col1  | Col2 |
+  | ----- | ---- |
+  | Col1  | Col2 |
+.
+<ul>
+<li>list item
+<table>
+<thead>
+<tr>
+<th>Col1</th>
+<th>Col2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Col1</td>
+<td>Col2</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+.

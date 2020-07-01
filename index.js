@@ -2,17 +2,22 @@
 var DFA = require('./lib/dfa.js');
 
 module.exports = function multimd_table_plugin(md, options) {
-  // TODO be consistent with markdown-it method
   options = options || {};
 
   function scan_bound_indices(state, line) {
-    var start = state.bMarks[line], /* no tShift to detect \n */
-        max = state.skipSpacesBack(state.eMarks[line], start),
-        bounds = [], pos,
+    /**
+     * Naming convention of positional variables
+     * ·······longtext······\n
+     * ^head  ^start  ^end  ^max
+     */
+    var start = state.bMarks[line] + state.tShift[line],
+        head = state.bMarks[line], /* no tShift to detect \n */
+        end = state.skipSpacesBack(state.eMarks[line], head),
+        bounds = [], pos, posjump,
         escape = false, code = false;
 
     /* Scan for valid pipe character position */
-    for (pos = start; pos < max; pos++) {
+    for (pos = start; pos < end; pos++) {
       switch (state.src.charCodeAt(pos)) {
         case 0x5c /* \ */:
           escape = true; break;
@@ -32,8 +37,8 @@ module.exports = function multimd_table_plugin(md, options) {
     if (bounds.length === 0) return bounds;
 
     /* Pad in newline characters on last and this line */
-    if (bounds[0] > start) { bounds.unshift(start - 1); }
-    if (bounds[bounds.length - 1] < max - 1) { bounds.push(max); }
+    if (bounds[0] > start) { bounds.unshift(head - 1); }
+    if (bounds[bounds.length - 1] < end - 1) { bounds.push(end); }
 
     return bounds;
   }
@@ -110,13 +115,12 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_empty(state, silent, line) {
-    var start = state.bMarks[line] + state.tShift[line],
-        max = state.eMarks[line];
-    return start === max;
+    return state.isEmpty(line);
   }
 
   function table(state, startLine, endLine, silent) {
-    /* Regex pseudo code for table:
+    /**
+     * Regex pseudo code for table:
      *     caption? header+ separator (data+ empty)* data+ caption?
      *
      * We use DFA to emulate this plugin. Types with lower precedence are
