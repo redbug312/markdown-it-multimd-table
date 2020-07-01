@@ -22,11 +22,11 @@ module.exports = function multimd_table_plugin(md, options) {
         case 0x5c /* \ */:
           escape = true; break;
         case 0x60 /* ` */:
-          posjump = state.skipChars(pos, 0x60);
+          posjump = state.skipChars(pos, 0x60) - 1;
           /* make \` closes the code sequence, but not open it;
              the reason is that `\` is correct code block */
           /* eslint-disable-next-line brace-style */
-          if (posjump > pos + 1) { pos = posjump; }
+          if (posjump > pos) { pos = posjump; }
           else if (code || !escape) { code = !code; }
           escape = false; break;
         case 0x7c /* | */:
