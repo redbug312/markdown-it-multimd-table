@@ -46,11 +46,11 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_caption(state, silent, line) {
-    var start = state.bMarks[line] + state.tShift[line],
+    var meta = { text: null, label: null },
+        start = state.bMarks[line] + state.tShift[line],
         max = state.eMarks[line],
         capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/,
-        matches = state.src.slice(start, max).match(capRE),
-        meta = {};
+        matches = state.src.slice(start, max).match(capRE);
 
     if (!matches) { return false; }
     if (silent)  { return true; }
@@ -64,8 +64,9 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_row(state, silent, line) {
-    var bounds = scan_bound_indices(state, line),
-        meta = {}, start, pos, oldMax;
+    var meta = { bounds: null, multiline: null },
+        bounds = scan_bound_indices(state, line),
+        start, pos, oldMax;
 
     if (bounds.length < 2) { return false; }
     if (silent) { return true; }
@@ -89,8 +90,8 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_separator(state, silent, line) {
-    var bounds = scan_bound_indices(state, line),
-        meta = { aligns: [], wraps: [] },
+    var meta = { aligns: [], wraps: [] },
+        bounds = scan_bound_indices(state, line),
         sepRE = /^:?(-+|=+):?\+?$/,
         c, text, align;
 
