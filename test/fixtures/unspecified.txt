@@ -3,6 +3,37 @@ desc: Corner cases unspecified in standard
 ---
 
 
+Multiple backticks inside inline code
+.
+|Shorthands|Functions|Rendered|
+|----------|---------|--------|
+|` `` `|`\textquotedblleft`|&ldquo;|
+|` '' `|`\textquotedblright`|&rdquo;|
+.
+<table>
+<thead>
+<tr>
+<th>Shorthands</th>
+<th>Functions</th>
+<th>Rendered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>``</code></td>
+<td><code>\textquotedblleft</code></td>
+<td>“</td>
+</tr>
+<tr>
+<td><code>''</code></td>
+<td><code>\textquotedblright</code></td>
+<td>”</td>
+</tr>
+</tbody>
+</table>
+.
+
+
 [Issue #1](github.com/RedBug312/markdown-it-multimd-table/issues/1)
 
 
