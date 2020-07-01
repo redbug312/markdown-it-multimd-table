@@ -2,7 +2,6 @@
 var DFA = require('./lib/dfa.js');
 
 module.exports = function multimd_table_plugin(md, options) {
-  // TODO be consistent with markdown-it method
   options = options || {};
 
   function scan_bound_indices(state, line) {
@@ -116,13 +115,12 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_empty(state, silent, line) {
-    var start = state.bMarks[line] + state.tShift[line],
-        max = state.eMarks[line];
-    return start === max;
+    return state.isEmpty(line);
   }
 
   function table(state, startLine, endLine, silent) {
-    /* Regex pseudo code for table:
+    /**
+     * Regex pseudo code for table:
      *     caption? header+ separator (data+ empty)* data+ caption?
      *
      * We use DFA to emulate this plugin. Types with lower precedence are
