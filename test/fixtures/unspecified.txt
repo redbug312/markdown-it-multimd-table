@@ -34,6 +34,39 @@ Multiple backticks inside inline code
 .
 
 
+Multiple backticks as table contents
+.
+|Single|Double|Triple|Quadruple|Pentuple|Hextuple|Septuple|
+|------|------|------|---------|--------|--------|--------|
+|\`|``|```|````|`````|``````|```````|
+.
+<table>
+<thead>
+<tr>
+<th>Single</th>
+<th>Double</th>
+<th>Triple</th>
+<th>Quadruple</th>
+<th>Pentuple</th>
+<th>Hextuple</th>
+<th>Septuple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`</td>
+<td>``</td>
+<td>```</td>
+<td>````</td>
+<td>`````</td>
+<td>``````</td>
+<td>```````</td>
+</tr>
+</tbody>
+</table>
+.
+
+
 [Issue #1](github.com/RedBug312/markdown-it-multimd-table/issues/1)
 
 
