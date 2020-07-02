@@ -30,7 +30,7 @@ The features are provided:
 
 Noted that the plugin is not a re-written of MultiMarkdown. This plugin will
 behave differently from the official compiler, but doing its best to obey rules
-defined in [MultiMarkdown User's Guide](mmd6-table). Please pose an issue if
+defined in [MultiMarkdown User's Guide][mmd6-table]. Please pose an issue if
 there are weird results for sensible inputs.
 
 [mmd6-table]: https://fletcher.github.io/MultiMarkdown-6/syntax/tables.html
@@ -350,11 +350,13 @@ This is parsed below when the option enabled:
 
 ## Credits
 
-* [MultiMarkdown](https://fletcher.github.io/MultiMarkdown-6/), Lightweight
+* [MultiMarkdown][mmd6], Lightweight
   markup processor to produce HTML, LaTeX, and more.
-* [markdown-it](https://markdown-it.github.io/), Markdown parser, done right.
-  100% CommonMark support, extensions, syntax plugins & high speed.
+* [markdown-it][mdit], Markdown parser, done right.
+  100% CommonMark support, extensions, syntax plugins &amp; high speed.
 
 ## License
 
-This software is licensed under the [MIT license](https://opensource.org/licenses/mit-license.php) © RedBug312.
+This software is licensed under the [MIT license][license] &copy; RedBug312.
+
+[license]: https://opensource.org/licenses/mit-license.php
