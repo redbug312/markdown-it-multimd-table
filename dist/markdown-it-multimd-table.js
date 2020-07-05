@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.0.2 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 4.0.3 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 // constructor
@@ -77,25 +77,32 @@ module.exports = DFA;
 var DFA = require('./lib/dfa.js');
 
 module.exports = function multimd_table_plugin(md, options) {
-  // TODO be consistent with markdown-it method
   options = options || {};
 
   function scan_bound_indices(state, line) {
-    var start = state.bMarks[line], /* no tShift to detect \n */
-        max = state.skipSpacesBack(state.eMarks[line], start),
-        bounds = [], pos,
+    /**
+     * Naming convention of positional variables
+     * ·······longtext······\n
+     * ^head  ^start  ^end  ^max
+     */
+    var start = state.bMarks[line] + state.tShift[line],
+        head = state.bMarks[line], /* no tShift to detect \n */
+        end = state.skipSpacesBack(state.eMarks[line], head),
+        bounds = [], pos, posjump,
         escape = false, code = false;
 
     /* Scan for valid pipe character position */
-    for (pos = start; pos < max; pos++) {
+    for (pos = start; pos < end; pos++) {
       switch (state.src.charCodeAt(pos)) {
         case 0x5c /* \ */:
           escape = true; break;
         case 0x60 /* ` */:
+          posjump = state.skipChars(pos, 0x60) - 1;
           /* make \` closes the code sequence, but not open it;
              the reason is that `\` is correct code block */
-          if (code || !escape) { code = !code; }
-          if (state.src.charCodeAt(pos - 1) === 0x60) { code = false; }
+          /* eslint-disable-next-line brace-style */
+          if (posjump > pos) { pos = posjump; }
+          else if (code || !escape) { code = !code; }
           escape = false; break;
         case 0x7c /* | */:
           if (!code && !escape) { bounds.push(pos); }
@@ -107,18 +114,18 @@ module.exports = function multimd_table_plugin(md, options) {
     if (bounds.length === 0) return bounds;
 
     /* Pad in newline characters on last and this line */
-    if (bounds[0] > start) { bounds.unshift(start - 1); }
-    if (bounds[bounds.length - 1] < max - 1) { bounds.push(max); }
+    if (bounds[0] > start) { bounds.unshift(head - 1); }
+    if (bounds[bounds.length - 1] < end - 1) { bounds.push(end); }
 
     return bounds;
   }
 
   function table_caption(state, silent, line) {
-    var start = state.bMarks[line] + state.tShift[line],
+    var meta = { text: null, label: null },
+        start = state.bMarks[line] + state.tShift[line],
         max = state.eMarks[line],
         capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/,
-        matches = state.src.slice(start, max).match(capRE),
-        meta = {};
+        matches = state.src.slice(start, max).match(capRE);
 
     if (!matches) { return false; }
     if (silent)  { return true; }
@@ -132,8 +139,9 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_row(state, silent, line) {
-    var bounds = scan_bound_indices(state, line),
-        meta = {}, start, pos, oldMax;
+    var meta = { bounds: null, multiline: null },
+        bounds = scan_bound_indices(state, line),
+        start, pos, oldMax;
 
     if (bounds.length < 2) { return false; }
     if (silent) { return true; }
@@ -157,8 +165,8 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_separator(state, silent, line) {
-    var bounds = scan_bound_indices(state, line),
-        meta = { aligns: [], wraps: [] },
+    var meta = { aligns: [], wraps: [] },
+        bounds = scan_bound_indices(state, line),
         sepRE = /^:?(-+|=+):?\+?$/,
         c, text, align;
 
@@ -185,13 +193,12 @@ module.exports = function multimd_table_plugin(md, options) {
   }
 
   function table_empty(state, silent, line) {
-    var start = state.bMarks[line] + state.tShift[line],
-        max = state.eMarks[line];
-    return start === max;
+    return state.isEmpty(line);
   }
 
   function table(state, startLine, endLine, silent) {
-    /* Regex pseudo code for table:
+    /**
+     * Regex pseudo code for table:
      *     caption? header+ separator (data+ empty)* data+ caption?
      *
      * We use DFA to emulate this plugin. Types with lower precedence are
