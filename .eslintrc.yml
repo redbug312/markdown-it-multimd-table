@@ -10,7 +10,7 @@ rules:
   block-spacing:          2
   brace-style:            [ 2, '1tbs', { allowSingleLine: true } ]
   # Postponed
-  #callback-return:        2
+  # callback-return:        2
   comma-dangle:           2
   comma-spacing:          2
   comma-style:            2
@@ -24,11 +24,11 @@ rules:
   eqeqeq:                 2
   func-style:             [ 2, declaration ]
   # Postponed
-  #global-require:         2
+  # global-require:         2
   guard-for-in:           2
   handle-callback-err:    2
 
-  indent:                 [ 2, 2, { VariableDeclarator: { var: 2, let: 2, const: 3 }, SwitchCase: 1 } ]
+  indent:                 [ 2, 2, { VariableDeclarator: { var: 2, let: 2, const: 3 }, SwitchCase: 1, ignoreComments: true } ]
 
   # key-spacing:            [ 2, { "align": "value" } ]
   keyword-spacing:        2
@@ -40,18 +40,18 @@ rules:
   new-cap:                2
   new-parens:             2
   # Postponed
-  #newline-after-var:      2
+  # newline-after-var:      2
   no-alert:               2
   no-array-constructor:   2
   # inconsisent rule with markdown-it, since bitwise operations are intentionally used.
   # no-bitwise:             2
   no-caller:              2
-  #no-case-declarations:   2
+  # no-case-declarations:   2
   no-catch-shadow:        2
   no-cond-assign:         2
   no-console:             1
   no-constant-condition:  2
-  #no-control-regex:       2
+  # no-control-regex:       2
   no-debugger:            2
   no-delete-var:          2
   no-div-regex:           2
@@ -74,7 +74,7 @@ rules:
   no-floating-decimal:    2
   no-func-assign:         2
   # Postponed
-  #no-implicit-coercion:   [2, { "boolean": true, "number": true, "string": true } ]
+  # no-implicit-coercion:   [2, { "boolean": true, "number": true, "string": true } ]
   no-implied-eval:        2
   no-inner-declarations:  2
   no-invalid-regexp:      2
@@ -88,10 +88,10 @@ rules:
   no-mixed-requires:      2
   no-mixed-spaces-and-tabs: 2
   # Postponed
-  #no-native-reassign:     2
+  # no-native-reassign:     2
   no-negated-in-lhs:      2
   # Postponed
-  #no-nested-ternary:      2
+  # no-nested-ternary:      2
   no-new:                 2
   no-new-func:            2
   no-new-object:          2
@@ -104,7 +104,7 @@ rules:
   no-proto:               2
   no-redeclare:           2
   # Postponed
-  #no-regex-spaces:        2
+  # no-regex-spaces:        2
   no-return-assign:       2
   no-self-compare:        2
   no-sequences:           2
@@ -125,7 +125,7 @@ rules:
   object-curly-spacing:   [ 2, always, { "objectsInObjects": true, "arraysInObjects": true } ]
   operator-assignment:    1
   # Postponed
-  #operator-linebreak:     [ 2, after ]
+  # operator-linebreak:     [ 2, after ]
   semi:                   2
   semi-spacing:           2
   space-before-function-paren: [ 2, { "anonymous": "always", "named": "never" } ]
@@ -133,7 +133,7 @@ rules:
   space-infix-ops:        2
   space-unary-ops:        2
   # Postponed
-  #spaced-comment:         [ 1, always, { exceptions: [ '/', '=' ] } ]
+  # spaced-comment:         [ 1, always, { exceptions: [ '/', '=' ] } ]
   strict:                 [ 2, global ]
   quotes:                 [ 2, single, avoid-escape ]
   quote-props:            [ 1, 'as-needed', { "keywords": true } ]
