@@ -1,8 +1,11 @@
 'use strict';
 var DFA = require('./lib/dfa.js');
+var utils = require('./lib/utils.js');
 
 module.exports = function multimd_table_plugin(md, options) {
-  options = options || {};
+  options = Object.assign(Object(), {
+    slugify: utils.slugify
+  }, options);
 
   function scan_bound_indices(state, line) {
     /**
@@ -58,7 +61,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
     meta.text  = matches[1];
     meta.label = matches[2] || matches[1];
-    meta.label = meta.label.toLowerCase().replace(/\W+/g, '');
+    meta.label = options.slugify(meta.label);
 
     return meta;
   }

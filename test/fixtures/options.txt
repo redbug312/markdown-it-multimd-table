@@ -454,3 +454,45 @@ Table with separator and empty data row
 <p>|---|---|---|
 |</p>
 .
+
+
+slugify: customizable id attribute generation
+
+
+[Issue #28](github.com/RedBug312/markdown-it-multimd-table/issues/28)
+Table with english label to slugify
+.
+[Empty Table]
+|---|---|---|
+|   |   |   |
+.
+<table>
+<caption id="test-empty-table">Empty Table</caption>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+.
+
+
+Table with non-english label to slugify
+.
+[空白表格]
+|---|---|---|
+|   |   |   |
+.
+<table>
+<caption id="test-%E7%A9%BA%E7%99%BD%E8%A1%A8%E6%A0%BC">空白表格</caption>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+.
