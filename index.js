@@ -11,7 +11,7 @@ module.exports = function multimd_table_plugin(md, options) {
      * ·········longtext······\n
      *   ^head  ^start  ^end  ^max
      */
-    var start = state.bMarks[line] + state.tShift[line],
+    var start = state.bMarks[line] + state.sCount[line],
         head = state.bMarks[line] + state.blkIndent,
         end = state.skipSpacesBack(state.eMarks[line], head),
         bounds = [], pos, posjump,
@@ -48,7 +48,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
   function table_caption(state, silent, line) {
     var meta = { text: null, label: null },
-        start = state.bMarks[line] + state.tShift[line],
+        start = state.bMarks[line] + state.sCount[line],
         max = state.eMarks[line],
         capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/,
         matches = state.src.slice(start, max).match(capRE);
@@ -76,7 +76,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
     /* Multiline. Scan boundaries again since it's very complicated */
     if (options.multiline) {
-      start = state.bMarks[line] + state.tShift[line];
+      start = state.bMarks[line] + state.sCount[line];
       pos = state.eMarks[line] - 1; /* where backslash should be */
       meta.multiline = (state.src.charCodeAt(pos) === 0x5C/* \ */);
       if (meta.multiline) {
