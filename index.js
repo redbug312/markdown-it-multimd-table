@@ -7,11 +7,12 @@ module.exports = function multimd_table_plugin(md, options) {
   function scan_bound_indices(state, line) {
     /**
      * Naming convention of positional variables
-     * ·······longtext······\n
-     * ^head  ^start  ^end  ^max
+     * - list-item
+     * ·········longtext······\n
+     *   ^head  ^start  ^end  ^max
      */
     var start = state.bMarks[line] + state.tShift[line],
-        head = state.bMarks[line], /* no tShift to detect \n */
+        head = state.bMarks[line] + state.blkIndent,
         end = state.skipSpacesBack(state.eMarks[line], head),
         bounds = [], pos, posjump,
         escape = false, code = false;
@@ -39,7 +40,7 @@ module.exports = function multimd_table_plugin(md, options) {
     if (bounds.length === 0) return bounds;
 
     /* Pad in newline characters on last and this line */
-    if (bounds[0] > start) { bounds.unshift(head - 1); }
+    if (bounds[0] > head) { bounds.unshift(head - 1); }
     if (bounds[bounds.length - 1] < end - 1) { bounds.push(end); }
 
     return bounds;
@@ -177,6 +178,7 @@ module.exports = function multimd_table_plugin(md, options) {
     }
     /* Don't mix up DFA `_state` and markdown-it `state` */
     tableDFA.set_actions(function (_line, _state, _type) {
+      // console.log(_line, _state.toString(16), _type.toString(16))  // for test
       switch (_type) {
         case 0x10000:
           if (tableToken.meta.cap) { break; }

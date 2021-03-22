@@ -273,6 +273,75 @@ triangle.</p>
 .
 
 
+[Issue #35](https://github.com/RedBug312/markdown-it-multimd-table/issues/35)
+First column left empty and not nested yet
+.
+    x    |    y
+---------|---------
+  test1  |  test2  \
+         |  test3
+.
+<table>
+<thead>
+<tr>
+<th>x</th>
+<th>y</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<p>test1</p>
+</td>
+<td>
+<p>test2
+test3</p>
+</td>
+</tr>
+</tbody>
+</table>
+.
+
+
+NOTE: the empty line seems needed, or the table is viewed as paragraph continuation.
+See https://spec.commonmark.org/0.29/#example-227.
+
+First column left empty and nested under list item
+.
+- list-item
+
+      x    |    y
+  ---------|---------
+    test1  |  test2  \
+           |  test3
+.
+<ul>
+<li>
+<p>list-item</p>
+<table>
+<thead>
+<tr>
+<th>x</th>
+<th>y</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<p>test1</p>
+</td>
+<td>
+<p>test2
+test3</p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+.
+
+
 rowspan: '^^' in a cell indicates it should be merged with the cell above
 UNDEFINED feature
 
