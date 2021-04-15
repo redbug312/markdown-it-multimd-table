@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.0.3 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 4.1.0 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 // constructor
@@ -77,16 +77,23 @@ module.exports = DFA;
 var DFA = require('./lib/dfa.js');
 
 module.exports = function multimd_table_plugin(md, options) {
-  options = options || {};
+  var defaults = {
+    multiline:  false,
+    rowspan:    false,
+    headerless: false,
+    multibody:  true
+  };
+  options = md.utils.assign({}, defaults, options || {});
 
   function scan_bound_indices(state, line) {
     /**
      * Naming convention of positional variables
-     * ·······longtext······\n
-     * ^head  ^start  ^end  ^max
+     * - list-item
+     * ·········longtext······\n
+     *   ^head  ^start  ^end  ^max
      */
-    var start = state.bMarks[line] + state.tShift[line],
-        head = state.bMarks[line], /* no tShift to detect \n */
+    var start = state.bMarks[line] + state.sCount[line],
+        head = state.bMarks[line] + state.blkIndent,
         end = state.skipSpacesBack(state.eMarks[line], head),
         bounds = [], pos, posjump,
         escape = false, code = false;
@@ -114,7 +121,7 @@ module.exports = function multimd_table_plugin(md, options) {
     if (bounds.length === 0) return bounds;
 
     /* Pad in newline characters on last and this line */
-    if (bounds[0] > start) { bounds.unshift(head - 1); }
+    if (bounds[0] > head) { bounds.unshift(head - 1); }
     if (bounds[bounds.length - 1] < end - 1) { bounds.push(end); }
 
     return bounds;
@@ -122,7 +129,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
   function table_caption(state, silent, line) {
     var meta = { text: null, label: null },
-        start = state.bMarks[line] + state.tShift[line],
+        start = state.bMarks[line] + state.sCount[line],
         max = state.eMarks[line],
         capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/,
         matches = state.src.slice(start, max).match(capRE);
@@ -150,7 +157,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
     /* Multiline. Scan boundaries again since it's very complicated */
     if (options.multiline) {
-      start = state.bMarks[line] + state.tShift[line];
+      start = state.bMarks[line] + state.sCount[line];
       pos = state.eMarks[line] - 1; /* where backslash should be */
       meta.multiline = (state.src.charCodeAt(pos) === 0x5C/* \ */);
       if (meta.multiline) {
@@ -250,8 +257,14 @@ module.exports = function multimd_table_plugin(md, options) {
       trToken      = new state.Token('table_fake_header_row', 'tr', 1);
       trToken.meta = Object();  // avoid trToken.meta.grp throws exception
     }
+    if (!options.multibody) {
+      tableDFA.update_transition(0x10010,
+        { 0x10000: 0x00000, 0x00010: 0x10010 }  // 0x10011 is never reached
+      );
+    }
     /* Don't mix up DFA `_state` and markdown-it `state` */
     tableDFA.set_actions(function (_line, _state, _type) {
+      // console.log(_line, _state.toString(16), _type.toString(16))  // for test
       switch (_type) {
         case 0x10000:
           if (tableToken.meta.cap) { break; }
