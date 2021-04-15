@@ -6,10 +6,9 @@ module.exports = function multimd_table_plugin(md, options) {
     multiline:  false,
     rowspan:    false,
     headerless: false,
-    multibody:  true,
-  }
+    multibody:  true
+  };
   options = md.utils.assign({}, defaults, options || {});
-  console.log(options);
 
   function scan_bound_indices(state, line) {
     /**

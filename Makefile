@@ -18,7 +18,7 @@ ${MODULE_PATH}: package.json
 lint: ${MODULE_PATH}
 	${MODULE_PATH}/eslint .
 
-test: ${MODULE_PATH}
+test: ${MODULE_PATH} lint
 	${MODULE_PATH}/mocha -R spec
 
 coverage: ${MODULE_PATH} lint
