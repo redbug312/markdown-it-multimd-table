@@ -2,7 +2,14 @@
 var DFA = require('./lib/dfa.js');
 
 module.exports = function multimd_table_plugin(md, options) {
-  options = options || {};
+  var defaults = {
+    multiline:  false,
+    rowspan:    false,
+    headerless: false,
+    multibody:  true,
+  }
+  options = md.utils.assign({}, defaults, options || {});
+  console.log(options);
 
   function scan_bound_indices(state, line) {
     /**
@@ -175,6 +182,11 @@ module.exports = function multimd_table_plugin(md, options) {
       );
       trToken      = new state.Token('table_fake_header_row', 'tr', 1);
       trToken.meta = Object();  // avoid trToken.meta.grp throws exception
+    }
+    if (!options.multibody) {
+      tableDFA.update_transition(0x10010,
+        { 0x10000: 0x00000, 0x00010: 0x10010 }  // 0x10011 is never reached
+      );
     }
     /* Don't mix up DFA `_state` and markdown-it `state` */
     tableDFA.set_actions(function (_line, _state, _type) {
