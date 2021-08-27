@@ -386,6 +386,34 @@ Rowspan and Colspan in one table cell
 </table>
 .
 
+[Issue #39](github.com/redbug312/markdown-it-multimd-table/issues/39)
+Rowspan and Colspan in one table cell base case
+.
+|    |    |    |
+|----|----|----|
+| A  | B      ||
+| C  | ^^     ||
+.
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td colspan="2" rowspan="2">B</td>
+</tr>
+<tr>
+<td>C</td>
+</tr>
+</tbody>
+</table>
+.
+
 Rowspan at first line
 .
 | ^^   | A    | B    |

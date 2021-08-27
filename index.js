@@ -142,7 +142,7 @@ module.exports = function multimd_table_plugin(md, options) {
     var tableDFA = new DFA(),
         grp = 0x10, mtr = -1,
         token, tableToken, trToken,
-        colspan, leftToken,
+        colspan, leftToken, leftTokens = [],
         rowspan, upTokens = [],
         tableLines, tgroupLines,
         tag, text, range, r, c, b;
@@ -269,6 +269,7 @@ module.exports = function multimd_table_plugin(md, options) {
 
     for (r = 0; r < tableToken.meta.tr.length; r++) {
       leftToken = new state.Token('table_fake_tcol_open', '', 1);
+      leftTokens = [ leftToken ];
 
       /* Push in thead/tbody and tr open tokens */
       trToken = tableToken.meta.tr[r];
@@ -287,16 +288,17 @@ module.exports = function multimd_table_plugin(md, options) {
       for (c = 0; c < trToken.meta.bounds.length - 1; c++) {
         range = [ trToken.meta.bounds[c] + 1, trToken.meta.bounds[c + 1] ];
         text = state.src.slice.apply(state.src, range);
+        var skip = false;
 
-        if (text === '') {
-          colspan = leftToken.attrGet('colspan');
-          leftToken.attrSet('colspan', colspan === null ? 2 : colspan + 1);
-          continue;
+        if (text === '' && leftTokens[r]) {
+          skip = true;
+          colspan = leftTokens[r].attrGet('colspan');
+          leftTokens[r].attrSet('colspan', colspan === null ? 2 : colspan + 1);
         }
         if (options.rowspan && upTokens[c] && text.trim() === '^^') {
+          skip = true;
           rowspan = upTokens[c].attrGet('rowspan');
           upTokens[c].attrSet('rowspan', rowspan === null ? 2 : rowspan + 1);
-          continue;
         }
 
         tag = (trToken.meta.type === 0x00100) ? 'th' : 'td';
@@ -309,7 +311,16 @@ module.exports = function multimd_table_plugin(md, options) {
         if (tableToken.meta.sep.wraps[c]) {
           token.attrs.push([ 'class', 'extend' ]);
         }
-        leftToken = upTokens[c] = token;
+        if (!(options.rowspan && upTokens[c] && text.trim() === '^^')) {
+          upTokens[c] = token;
+        }
+        if (!(leftTokens[r] && text === '')) {
+          leftTokens[r] = token;
+        }
+        if (skip) {
+          state.tokens.splice(-1, 1);
+          continue;
+        }
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
         if (options.multiline && trToken.meta.multiline && trToken.meta.mbounds) {
