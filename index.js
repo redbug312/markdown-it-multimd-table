@@ -142,7 +142,7 @@ module.exports = function multimd_table_plugin(md, options) {
     var tableDFA = new DFA(),
         grp = 0x10, mtr = -1,
         token, tableToken, trToken,
-        colspan, leftToken, leftTokens = [],
+        colspan, leftTokens = [],
         rowspan, upTokens = [],
         tableLines, tgroupLines,
         tag, text, range, r, c, b;
@@ -268,8 +268,7 @@ module.exports = function multimd_table_plugin(md, options) {
     }
 
     for (r = 0; r < tableToken.meta.tr.length; r++) {
-      leftToken = new state.Token('table_fake_tcol_open', '', 1);
-      leftTokens = [ leftToken ];
+      leftTokens = [ new state.Token('table_fake_tcol_open', '', 1) ];
 
       /* Push in thead/tbody and tr open tokens */
       trToken = tableToken.meta.tr[r];
