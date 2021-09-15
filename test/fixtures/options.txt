@@ -346,7 +346,7 @@ rowspan: '^^' in a cell indicates it should be merged with the cell above
 UNDEFINED feature
 
 
-Rowspan and Colspan in one table cell
+Rowspan and colspan in one table cell
 .
 | A                |||
 |------|------|------|
@@ -387,7 +387,7 @@ Rowspan and Colspan in one table cell
 .
 
 [Issue #39](github.com/redbug312/markdown-it-multimd-table/issues/39)
-Rowspan and Colspan in one table cell base case
+Rowspan and colspan in one table cell base case
 .
 |    |    |    |
 |----|----|----|
