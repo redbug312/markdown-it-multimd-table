@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.1.0 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 4.1.1 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 // constructor
@@ -254,7 +254,7 @@ module.exports = function multimd_table_plugin(md, options) {
       tableDFA.update_transition(0x11100,
         { 0x10000: 0x01100, 0x01000: 0x10010, 0x00100: 0x01100 }
       );
-      trToken      = new state.Token('table_fake_header_row', 'tr', 1);
+      trToken      = new state.Token('tr_placeholder', 'tr', 0);
       trToken.meta = Object();  // avoid trToken.meta.grp throws exception
     }
     if (!options.multibody) {
@@ -343,7 +343,7 @@ module.exports = function multimd_table_plugin(md, options) {
     }
 
     for (r = 0; r < tableToken.meta.tr.length; r++) {
-      leftToken = new state.Token('table_fake_tcol_open', '', 1);
+      leftToken = new state.Token('td_th_placeholder', '', 0);
 
       /* Push in thead/tbody and tr open tokens */
       trToken = tableToken.meta.tr[r];
@@ -371,6 +371,7 @@ module.exports = function multimd_table_plugin(md, options) {
         if (options.rowspan && upTokens[c] && text.trim() === '^^') {
           rowspan = upTokens[c].attrGet('rowspan');
           upTokens[c].attrSet('rowspan', rowspan === null ? 2 : rowspan + 1);
+          leftToken = new state.Token('td_th_placeholder', '', 0);
           continue;
         }
 
@@ -384,6 +385,7 @@ module.exports = function multimd_table_plugin(md, options) {
         if (tableToken.meta.sep.wraps[c]) {
           token.attrs.push([ 'class', 'extend' ]);
         }
+
         leftToken = upTokens[c] = token;
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
