@@ -145,7 +145,8 @@ module.exports = function multimd_table_plugin(md, options) {
         colspan, leftToken,
         rowspan, upTokens = [],
         tableLines, tgroupLines,
-        tag, text, range, r, c, b;
+        tag, text, range, r, c, b, t,
+        blockTokens, blToken;
 
     if (startLine + 2 > endLine) { return false; }
 
@@ -322,7 +323,18 @@ module.exports = function multimd_table_plugin(md, options) {
             range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
             text.push(state.src.slice.apply(state.src, range).trimRight());
           }
-          state.md.block.parse(text.join('\n'), state.md, state.env, state.tokens);
+          blockTokens = [];
+          state.md.block.parse(text.join('\n'), state.md, state.env, blockTokens);
+          /* block.parse wipes out token context (level and map) so it needs to be restored*/
+          for (t = 0; t < blockTokens.length; t++) {
+            blToken = blockTokens[t];
+            blToken.level = trToken.level + 1;
+            if (blToken.map && trToken.map) {
+              blToken.map[0] = blToken.map[0] + trToken.map[0];
+              blToken.map[1] = blToken.map[1] + trToken.map[0];
+            }
+            state.tokens.push(blToken);
+          }
         } else {
           token          = state.push('inline', '', 0);
           token.content  = text.trim();
