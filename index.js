@@ -330,8 +330,8 @@ module.exports = function multimd_table_plugin(md, options) {
             blToken = blockTokens[t];
             blToken.level = trToken.level + 1;
             if (blToken.map && trToken.map) {
-              blToken.map[0] = blToken.map[0] + trToken.map[0];
-              blToken.map[1] = blToken.map[1] + trToken.map[0];
+              blToken.map[0] += trToken.map[0];
+              blToken.map[1] += trToken.map[0];
             }
             state.tokens.push(blToken);
           }
@@ -339,6 +339,7 @@ module.exports = function multimd_table_plugin(md, options) {
           token          = state.push('inline', '', 0);
           token.content  = text.trim();
           token.map      = trToken.map;
+          token.level    = trToken.level + 1;
           token.children = [];
         }
 
