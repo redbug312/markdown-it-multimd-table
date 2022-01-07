@@ -146,7 +146,7 @@ module.exports = function multimd_table_plugin(md, options) {
         rowspan, upTokens = [],
         tableLines, tgroupLines,
         tag, text, range, r, c, b, t,
-        blockTokens, blToken;
+        blockState;
 
     if (startLine + 2 > endLine) { return false; }
 
@@ -316,24 +316,20 @@ module.exports = function multimd_table_plugin(md, options) {
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
         if (options.multiline && trToken.meta.multiline && trToken.meta.mbounds) {
-          text = [ text.trimRight() ];
+          // Pad the text with empty lines to ensure the line number mapping is correct
+          text = new Array(trToken.map[0]).fill('').concat([ text.trimRight() ]);
           for (b = 1; b < trToken.meta.mbounds.length; b++) {
             /* Line with N bounds has cells indexed from 0 to N-2 */
             if (c > trToken.meta.mbounds[b].length - 2) { continue; }
             range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
             text.push(state.src.slice.apply(state.src, range).trimRight());
           }
-          blockTokens = [];
-          state.md.block.parse(text.join('\n'), state.md, state.env, blockTokens);
-          /* block.parse wipes out token context (level and map) so it needs to be restored*/
-          for (t = 0; t < blockTokens.length; t++) {
-            blToken = blockTokens[t];
-            blToken.level = trToken.level + 1;
-            if (blToken.map && trToken.map) {
-              blToken.map[0] += trToken.map[0];
-              blToken.map[1] += trToken.map[0];
-            }
-            state.tokens.push(blToken);
+          blockState = new state.md.block.State(text.join('\n'), state.md, state.env, []);
+          blockState.level = trToken.level + 1;
+          // Start tokenizing from the actual content (trToken.map[0])
+          state.md.block.tokenize(blockState, trToken.map[0], blockState.lineMax);
+          for (t = 0; t < blockState.tokens.length; t++) {
+            state.tokens.push(blockState.tokens[t]);
           }
         } else {
           token          = state.push('inline', '', 0);
