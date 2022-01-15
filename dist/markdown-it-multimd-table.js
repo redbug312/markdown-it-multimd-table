@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.1.1 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*! markdown-it-multimd-table 4.1.2 https://github.com/RedBug312/markdown-it-multimd-table @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitMultimdTable = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 // constructor
@@ -220,7 +220,8 @@ module.exports = function multimd_table_plugin(md, options) {
         colspan, leftToken,
         rowspan, upTokens = [],
         tableLines, tgroupLines,
-        tag, text, range, r, c, b;
+        tag, text, range, r, c, b, t,
+        blockState;
 
     if (startLine + 2 > endLine) { return false; }
 
@@ -390,18 +391,26 @@ module.exports = function multimd_table_plugin(md, options) {
 
         /* Multiline. Join the text and feed into markdown-it blockParser. */
         if (options.multiline && trToken.meta.multiline && trToken.meta.mbounds) {
-          text = [ text.trimRight() ];
+          // Pad the text with empty lines to ensure the line number mapping is correct
+          text = new Array(trToken.map[0]).fill('').concat([ text.trimRight() ]);
           for (b = 1; b < trToken.meta.mbounds.length; b++) {
             /* Line with N bounds has cells indexed from 0 to N-2 */
             if (c > trToken.meta.mbounds[b].length - 2) { continue; }
             range = [ trToken.meta.mbounds[b][c] + 1, trToken.meta.mbounds[b][c + 1] ];
             text.push(state.src.slice.apply(state.src, range).trimRight());
           }
-          state.md.block.parse(text.join('\n'), state.md, state.env, state.tokens);
+          blockState = new state.md.block.State(text.join('\n'), state.md, state.env, []);
+          blockState.level = trToken.level + 1;
+          // Start tokenizing from the actual content (trToken.map[0])
+          state.md.block.tokenize(blockState, trToken.map[0], blockState.lineMax);
+          for (t = 0; t < blockState.tokens.length; t++) {
+            state.tokens.push(blockState.tokens[t]);
+          }
         } else {
           token          = state.push('inline', '', 0);
           token.content  = text.trim();
           token.map      = trToken.map;
+          token.level    = trToken.level + 1;
           token.children = [];
         }
 
