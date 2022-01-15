@@ -261,7 +261,8 @@ square.</p>
 <tr>
 <td>
 <pre><code>for i in range(5):
-    print('*' * i)</code></pre>
+    print('*' * i)
+</code></pre>
 </td>
 <td>
 <p>Print a
