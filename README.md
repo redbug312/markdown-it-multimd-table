@@ -1,4 +1,4 @@
-[![CI](https://github.com/redbug312/markdown-it-multimd-table/workflows/CI/badge.svg)](https://github.com/redbug312/markdown-it-multimd-table/actions)
+[![GitHub Action](https://github.com/redbug312/markdown-it-multimd-table/workflows/Node/badge.svg)](https://github.com/redbug312/markdown-it-multimd-table/actions)
 [![NPM version](https://img.shields.io/npm/v/markdown-it-multimd-table.svg?style=flat)](https://www.npmjs.org/package/markdown-it-multimd-table)
 [![Coverage Status](https://coveralls.io/repos/redbug312/markdown-it-multimd-table/badge.svg?branch=master&service=github)](https://coveralls.io/github/redbug312/markdown-it-multimd-table?branch=master)
 
