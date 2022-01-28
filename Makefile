@@ -11,7 +11,7 @@ MODULE_PATH := ./node_modules/.bin
 
 
 ${MODULE_PATH}: package.json
-	npm install --save-dev
+	npm install markdown-it --save-dev
 	touch $@  # update timestamp
 
 
