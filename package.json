@@ -9,27 +9,25 @@
     "multimarkdown",
     "table"
   ],
-  "homepage": "https://github.com/RedBug312/markdown-it-multimd-table",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/RedBug312/markdown-it-multimd-table.git"
-  },
-  "bugs": {
-    "url": "https://github.com/RedBug312/markdown-it-multimd-table/issues"
-  },
-  "author": "RedBug312",
+  "repository": "redbug312/markdown-it-multimd-table",
+  "author": "redbug312",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
     "test": "make test"
   },
   "devDependencies": {
-    "browserify": "^16.3.0",
+    "@rollup/plugin-commonjs": "^16.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
     "coveralls": "^3.0.4",
     "eslint": "^8.6.0",
-    "istanbul": "^0.4.5",
+    "markdown-it": "^12.3.2",
     "markdown-it-testgen": "^0.1.3",
     "mocha": "^9.1.4",
-    "terser": "^4.1.2"
+    "nyc": "^15.1.0",
+    "rollup": "^2.29.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-terser": "^7.0.2"
   }
 }

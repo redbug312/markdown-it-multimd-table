@@ -1,6 +1,6 @@
+[![GitHub Action](https://github.com/redbug312/markdown-it-multimd-table/workflows/Node.js/badge.svg)](https://github.com/redbug312/markdown-it-multimd-table/actions)
 [![NPM version](https://img.shields.io/npm/v/markdown-it-multimd-table.svg?style=flat)](https://www.npmjs.org/package/markdown-it-multimd-table)
-[![Build Status](https://travis-ci.org/RedBug312/markdown-it-multimd-table.svg?branch=master)](https://travis-ci.org/RedBug312/markdown-it-multimd-table)
-[![Coverage Status](https://coveralls.io/repos/github/RedBug312/markdown-it-multimd-table/badge.svg?branch=master)](https://coveralls.io/github/RedBug312/markdown-it-multimd-table?branch=master)
+[![Coverage Status](https://coveralls.io/repos/redbug312/markdown-it-multimd-table/badge.svg?branch=master&service=github)](https://coveralls.io/github/redbug312/markdown-it-multimd-table?branch=master)
 
 MultiMarkdown table syntax plugin for markdown-it markdown parser
 
@@ -57,7 +57,7 @@ For a quick demo:
 ```javascript
 $ mkdir markdown-it-multimd-table
 $ cd markdown-it-multimd-table
-$ npm install markdown-it-multimd-table --prefix .
+$ npm install markdown-it-multimd-table --save-dev --prefix .
 $ vim test.js
 
     var md = require('markdown-it')()
