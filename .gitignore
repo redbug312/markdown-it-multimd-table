@@ -1,5 +1,4 @@
+.nyc_output/
 node_modules/
 bower_components/
 coverage/
-
-tags
