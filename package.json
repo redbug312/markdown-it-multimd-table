@@ -13,6 +13,7 @@
   "author": "redbug312",
   "license": "MIT",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "make test"
   },
