@@ -56,12 +56,12 @@ module.exports = function multimd_table_plugin(md, options) {
     var meta = { text: null, label: null },
         start = state.bMarks[line] + state.sCount[line],
         max = state.eMarks[line],
-        capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/,
+        /* A non-greedy qualifier allows the label to be matched */
+        capRE = /^\[(.+?)\](\[([^\[\]]+)\])?\s*$/,
         matches = state.src.slice(start, max).match(capRE);
 
     if (!matches) { return false; }
     if (silent)  { return true; }
-    // TODO eliminate capRE by simple checking
 
     meta.text  = matches[1];
     meta.label = matches[2] || matches[1];

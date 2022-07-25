@@ -237,3 +237,58 @@ Table indented under lists without empty line
 </li>
 </ul>
 .
+
+
+[Issue #50](github.com/RedBug312/markdown-it-multimd-table/issues/50)
+
+
+Caption that contains links
+.
+make|me
+---|---
+a|table
+[caption allows **bold** or [link][repo]]
+[repo]: https://github.com/redbug312/markdown-it-multimd-table
+.
+<table>
+<caption id="captionallowsboldorlinkrepo">caption allows <strong>bold</strong> or <a href="https://github.com/redbug312/markdown-it-multimd-table">link</a></caption>
+<thead>
+<tr>
+<th>make</th>
+<th>me</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>table</td>
+</tr>
+</tbody>
+</table>
+.
+
+
+Caption with a label that contains links
+.
+make|me
+---|---
+a|table
+[caption allows **bold** or [link][repo]][labeled]
+[repo]: https://github.com/redbug312/markdown-it-multimd-table
+.
+<table>
+<caption id="labeled">caption allows <strong>bold</strong> or <a href="https://github.com/redbug312/markdown-it-multimd-table">link</a></caption>
+<thead>
+<tr>
+<th>make</th>
+<th>me</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>table</td>
+</tr>
+</tbody>
+</table>
+.
