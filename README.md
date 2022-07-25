@@ -57,7 +57,7 @@ For a quick demo:
 ```javascript
 $ mkdir markdown-it-multimd-table
 $ cd markdown-it-multimd-table
-$ npm install markdown-it-multimd-table --save-dev --prefix .
+$ npm install markdown-it markdown-it-multimd-table --prefix .
 $ vim test.js
 
     var md = require('markdown-it')()
