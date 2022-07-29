@@ -24,6 +24,7 @@ describe('markdown-it-multimd-table-options', function () {
     rowspan:    true,
     headerless: true,
     multibody:  false,
+    autolabel:  false,
   });
   generate(path.join(__dirname, 'fixtures/options.txt'), { header: true }, md);
 });

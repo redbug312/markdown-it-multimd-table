@@ -597,3 +597,31 @@ A paragraph contains pipes (|).
 </tbody>
 </table>
 .
+
+
+autolabel: create table caption id even if not labeled
+AGAINST note 7 if disabled
+
+
+[Issue #50](https://github.com/redbug312/markdown-it-multimd-table/issues/50)
+Table not labeled with autolabel disabled
+.
+| --- | --- |
+| 1   | 2   |
+| 3   | 4   |
+[nolabel]
+.
+<table>
+<caption>nolabel</caption>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+.

@@ -6,7 +6,8 @@ module.exports = function multimd_table_plugin(md, options) {
     multiline:  false,
     rowspan:    false,
     headerless: false,
-    multibody:  true
+    multibody:  true,
+    autolabel:  true
   };
   options = md.utils.assign({}, defaults, options || {});
 
@@ -64,6 +65,9 @@ module.exports = function multimd_table_plugin(md, options) {
     if (silent)  { return true; }
 
     meta.text  = matches[1];
+
+    if (!options.autolabel && !matches[2]) { return meta; }
+
     meta.label = matches[2] || matches[1];
     meta.label = meta.label.toLowerCase().replace(/\W+/g, '');
 
@@ -258,7 +262,11 @@ module.exports = function multimd_table_plugin(md, options) {
     if (tableToken.meta.cap) {
       token          = state.push('caption_open', 'caption', 1);
       token.map      = tableToken.meta.cap.map;
-      token.attrs    = [ [ 'id', tableToken.meta.cap.label ] ];
+
+      /* Null is possible when disabled the option autolabel */
+      if (tableToken.meta.cap.label !== null) {
+        token.attrs    = [ [ 'id', tableToken.meta.cap.label ] ];
+      }
 
       token          = state.push('inline', '', 0);
       token.content  = tableToken.meta.cap.text;
