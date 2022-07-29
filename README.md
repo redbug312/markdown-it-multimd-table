@@ -48,6 +48,8 @@ var md = require('markdown-it')()
               multiline:  false,
               rowspan:    false,
               headerless: false,
+              multibody:  true,
+              aotolabel:  true,
             });
 
 md.render(/*...*/)
@@ -122,7 +124,9 @@ Here's the table expected on browser:
 Noted that GitHub filters out `style` property, so the example uses `align` the
 obsolete one. However it outputs `style="text-align: ..."` in actual.
 
-### Multiline (optional)
+## Options
+
+### Multiline
 
 Backslash at end merges with line content below.<br>
 Feature contributed by [Lucas-C](https://github.com/Lucas-C).
@@ -184,7 +188,7 @@ This is parsed below when the option enabled:
 </tbody>
 </table>
 
-### Rowspan (optional)
+### Rowspan
 
 `^^` indicates cells being merged above.<br>
 Feature contributed by [pmccloghrylaing](https://github.com/pmccloghrylaing).
@@ -245,7 +249,7 @@ This is parsed below when the option enabled:
 </tbody>
 </table>
 
-### Headerless (optional)
+### Headerless
 
 Table header can be eliminated.
 
@@ -347,6 +351,16 @@ This is parsed below when the option enabled:
 </tr>
 </tbody>
 </table>
+
+### Multibody
+
+An empty line separates consecutive table bodies. When disabled, an empty line
+always cuts off the tables.
+
+### Autolabel
+
+Table `id` attribute follows the table caption if not labeled. When disabled,
+caption without labels cannot generate the attribute.
 
 ## Credits
 
