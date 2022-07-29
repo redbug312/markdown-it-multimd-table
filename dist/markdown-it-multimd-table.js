@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.1.3 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
+/*! markdown-it-multimd-table 4.2.0 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory() : typeof define === "function" && define.amd ? define(factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, 
   global.markdownit = factory());
@@ -64,7 +64,8 @@
       multiline: false,
       rowspan: false,
       headerless: false,
-      multibody: true
+      multibody: true,
+      autolabel: true
     };
     options = md.utils.assign({}, defaults, options || {});
     function scan_bound_indices(state, line) {
@@ -118,15 +119,19 @@
       var meta = {
         text: null,
         label: null
-      }, start = state.bMarks[line] + state.sCount[line], max = state.eMarks[line], capRE = /^\[([^\[\]]+)\](\[([^\[\]]+)\])?\s*$/, matches = state.src.slice(start, max).match(capRE);
+      }, start = state.bMarks[line] + state.sCount[line], max = state.eMarks[line], 
+      /* A non-greedy qualifier allows the label to be matched */
+      capRE = /^\[(.+?)\](\[([^\[\]]+)\])?\s*$/, matches = state.src.slice(start, max).match(capRE);
       if (!matches) {
         return false;
       }
       if (silent) {
         return true;
       }
-      // TODO eliminate capRE by simple checking
-            meta.text = matches[1];
+      meta.text = matches[1];
+      if (!options.autolabel && !matches[2]) {
+        return meta;
+      }
       meta.label = matches[2] || matches[1];
       meta.label = meta.label.toLowerCase().replace(/\W+/g, "");
       return meta;
@@ -349,7 +354,9 @@
       if (tableToken.meta.cap) {
         token = state.push("caption_open", "caption", 1);
         token.map = tableToken.meta.cap.map;
-        token.attrs = [ [ "id", tableToken.meta.cap.label ] ];
+        /* Null is possible when disabled the option autolabel */        if (tableToken.meta.cap.label !== null) {
+          token.attrs = [ [ "id", tableToken.meta.cap.label ] ];
+        }
         token = state.push("inline", "", 0);
         token.content = tableToken.meta.cap.text;
         token.map = tableToken.meta.cap.map;
