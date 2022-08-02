@@ -49,7 +49,7 @@ var md = require('markdown-it')()
               rowspan:    false,
               headerless: false,
               multibody:  true,
-              aotolabel:  true,
+              autolabel:  true,
             });
 
 md.render(/*...*/)
@@ -359,8 +359,11 @@ always cuts off the tables.
 
 ### Autolabel
 
-Table `id` attribute follows the table caption if not labeled. When disabled,
-caption without labels cannot generate the attribute.
+Table captions fill the `id` attribute. When disabled, an unlabeled caption will
+not fill the attribute by its content.
+
+(A Labeled caption always fill the attribute by its label, regardless of the
+option.)
 
 ## Credits
 
