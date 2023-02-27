@@ -67,6 +67,54 @@ Multiple backticks as table contents
 .
 
 
+Literal backtick (`) inside inline code in table data row
+.
+|   First   |  Second  |
+| --------- | -------- |
+| `` ` ``   | Content  |
+| ``(`)``   | Content  |
+| ``(\`)``  | Content  |
+| `(``)`    | Content  |
+| `(```)`   | `(```)`  |
+| `(```)`   | `(```)`  |
+.
+<table>
+<thead>
+<tr>
+<th>First</th>
+<th>Second</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>`</code></td>
+<td>Content</td>
+</tr>
+<tr>
+<td><code>(`)</code></td>
+<td>Content</td>
+</tr>
+<tr>
+<td><code>(\`)</code></td>
+<td>Content</td>
+</tr>
+<tr>
+<td><code>(``)</code></td>
+<td>Content</td>
+</tr>
+<tr>
+<td><code>(```)</code></td>
+<td><code>(```)</code></td>
+</tr>
+<tr>
+<td><code>(```)</code></td>
+<td><code>(```)</code></td>
+</tr>
+</tbody>
+</table>
+.
+
+
 [Issue #1](github.com/RedBug312/markdown-it-multimd-table/issues/1)
 
 
