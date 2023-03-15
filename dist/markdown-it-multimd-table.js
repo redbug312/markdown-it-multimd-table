@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.2.0 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
+/*! markdown-it-multimd-table 4.2.1 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory() : typeof define === "function" && define.amd ? define(factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, 
   global.markdownit = factory());
@@ -75,7 +75,7 @@
        * ·········longtext······\n
        *   ^head  ^start  ^end  ^max
        */
-      var start = state.bMarks[line] + state.sCount[line], head = state.bMarks[line] + state.blkIndent, end = state.skipSpacesBack(state.eMarks[line], head), bounds = [], pos, posjump, escape = false, code = false;
+      var start = state.bMarks[line] + state.sCount[line], head = state.bMarks[line] + state.blkIndent, end = state.skipSpacesBack(state.eMarks[line], head), bounds = [], pos, posjump, escape = false, code = false, serial = 0;
       /* Scan for valid pipe character position */      for (pos = start; pos < end; pos++) {
         switch (state.src.charCodeAt(pos)) {
          case 92 /* \ */ :
@@ -87,8 +87,15 @@
           /* make \` closes the code sequence, but not open it;
                the reason is that `\` is correct code block */
           /* eslint-disable-next-line brace-style */          if (posjump > pos) {
+            if (!code) {
+              if (serial === 0) {
+                serial = posjump - pos;
+              } else if (serial === posjump - pos) {
+                serial = 0;
+              }
+            }
             pos = posjump;
-          } else if (code || !escape) {
+          } else if (code || !escape && !serial) {
             code = !code;
           }
           escape = false;
