@@ -267,10 +267,20 @@ module.exports = function multimd_table_plugin(md, options) {
       token          = state.push('caption_open', 'caption', 1);
       token.map      = tableToken.meta.cap.map;
 
+      var attrs      = [];
+      var capSide    = tableToken.meta.cap.first ? 'top' : 'bottom';
+
       /* Null is possible when disabled the option autolabel */
       if (tableToken.meta.cap.label !== null) {
-        token.attrs    = [ [ 'id', tableToken.meta.cap.label ] ];
+        attrs.push([ 'id', tableToken.meta.cap.label ]);
       }
+
+      /* Add caption-side inline-CSS to <caption> tag, if caption is below the markdown table. */
+      if (capSide !== 'top') {
+        attrs.push([ 'style', 'caption-side: ' + capSide ]);
+      }
+
+      token.attrs    = attrs;
 
       token          = state.push('inline', '', 0);
       token.content  = tableToken.meta.cap.text;
