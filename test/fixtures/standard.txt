@@ -485,7 +485,7 @@ Content       |   **Cell**    |         Cell |
 [             |               |              ]
 .
 <table>
-<caption id="">             |               |              </caption>
+<caption id="" style="caption-side: bottom">             |               |              </caption>
 <thead>
 <tr>
 <th></th>
@@ -606,7 +606,7 @@ Content       |                             ||
 [Prototype table]
 .
 <table>
-<caption id="prototypetable">Prototype table</caption>
+<caption id="prototypetable" style="caption-side: bottom">Prototype table</caption>
 <thead>
 <tr>
 <th></th>
@@ -648,7 +648,7 @@ And more      | With an escaped '\|'         ||
 [Prototype table]
 .
 <table>
-<caption id="prototypetable">Prototype table</caption>
+<caption id="prototypetable" style="caption-side: bottom">Prototype table</caption>
 <thead>
 <tr>
 <th></th>

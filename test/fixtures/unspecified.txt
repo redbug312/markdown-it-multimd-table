@@ -299,7 +299,7 @@ a|table
 [repo]: https://github.com/redbug312/markdown-it-multimd-table
 .
 <table>
-<caption id="captionallowsboldorlinkrepo">caption allows <strong>bold</strong> or <a href="https://github.com/redbug312/markdown-it-multimd-table">link</a></caption>
+<caption id="captionallowsboldorlinkrepo" style="caption-side: bottom">caption allows <strong>bold</strong> or <a href="https://github.com/redbug312/markdown-it-multimd-table">link</a></caption>
 <thead>
 <tr>
 <th>make</th>
@@ -325,7 +325,7 @@ a|table
 [repo]: https://github.com/redbug312/markdown-it-multimd-table
 .
 <table>
-<caption id="labeled">caption allows <strong>bold</strong> or <a href="https://github.com/redbug312/markdown-it-multimd-table">link</a></caption>
+<caption id="labeled" style="caption-side: bottom">caption allows <strong>bold</strong> or <a href="https://github.com/redbug312/markdown-it-multimd-table">link</a></caption>
 <thead>
 <tr>
 <th>make</th>

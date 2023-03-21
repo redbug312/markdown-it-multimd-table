@@ -612,7 +612,7 @@ Table not labeled with autolabel disabled
 [nolabel]
 .
 <table>
-<caption>nolabel</caption>
+<caption style="caption-side: bottom">nolabel</caption>
 <tbody>
 <tr>
 <td>1</td>
