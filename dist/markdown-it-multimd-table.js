@@ -1,4 +1,4 @@
-/*! markdown-it-multimd-table 4.2.1 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
+/*! markdown-it-multimd-table 4.2.2 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory() : typeof define === "function" && define.amd ? define(factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, 
   global.markdownit = factory());
@@ -361,9 +361,15 @@
       if (tableToken.meta.cap) {
         token = state.push("caption_open", "caption", 1);
         token.map = tableToken.meta.cap.map;
+        var attrs = [];
+        var capSide = tableToken.meta.cap.first ? "top" : "bottom";
         /* Null is possible when disabled the option autolabel */        if (tableToken.meta.cap.label !== null) {
-          token.attrs = [ [ "id", tableToken.meta.cap.label ] ];
+          attrs.push([ "id", tableToken.meta.cap.label ]);
         }
+        /* Add caption-side inline-CSS to <caption> tag, if caption is below the markdown table. */        if (capSide !== "top") {
+          attrs.push([ "style", "caption-side: " + capSide ]);
+        }
+        token.attrs = attrs;
         token = state.push("inline", "", 0);
         token.content = tableToken.meta.cap.text;
         token.map = tableToken.meta.cap.map;
