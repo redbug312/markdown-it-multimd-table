@@ -11,7 +11,7 @@ export default {
     {
       file: 'dist/markdown-it-multimd-table.js',
       format: 'umd',
-      name: 'markdownit',
+      name: 'markdownitMultimdTable',
       plugins: [
         // Here terser is used only to force ascii output
         terser({
@@ -29,7 +29,7 @@ export default {
     {
       file: 'dist/markdown-it-multimd-table.min.js',
       format: 'umd',
-      name: 'markdownit',
+      name: 'markdownitMultimdTable',
       plugins: [
         terser({
           format: {
