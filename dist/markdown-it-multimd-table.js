@@ -1,7 +1,7 @@
-/*! markdown-it-multimd-table 4.2.2 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
+/*! markdown-it-multimd-table 4.2.3 https://github.com/redbug312/markdown-it-multimd-table @license MIT */
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory() : typeof define === "function" && define.amd ? define(factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, 
-  global.markdownit = factory());
+  global.markdownitMultimdTable = factory());
 })(this, (function() {
   "use strict";
   // constructor
