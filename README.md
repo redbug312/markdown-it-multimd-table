@@ -49,7 +49,7 @@ var md = require('markdown-it')()
               rowspan:    false,
               headerless: false,
               multibody:  true,
-              aotolabel:  true,
+              autolabel:  true,
             });
 
 md.render(/*...*/)
