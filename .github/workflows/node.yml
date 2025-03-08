@@ -24,7 +24,7 @@ jobs:
         run: make lint
       - name: Run test task
         run: make test
-      - name: Run minfy task
+      - name: Run minify task
         run: make minify
       - name: Upload minified code as artifact
         uses: actions/upload-artifact@v4
