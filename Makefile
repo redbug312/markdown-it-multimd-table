@@ -18,8 +18,8 @@ test: ${MODULE_PATH}
 coverage: ${MODULE_PATH} lint test
 	nyc report --reporter html
 
-.PHONY: report-coveralls
-report-coveralls: ${MODULE_PATH} lint test
+.PHONY: coverage-for-ci
+coverage-for-ci: ${MODULE_PATH} lint test
 	# For coverage test. You can use `make coverage` on local.
 	nyc --reporter=lcov mocha
 
