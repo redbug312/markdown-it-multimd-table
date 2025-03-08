@@ -9,22 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ '18' ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '18'
       - name: Install dependencies
         run: npm install --save-dev
-      - name: Minify with rollup
+      - name: Run audit task
+        run: make audit
+      - name: Run lint task
+        run: make lint
+      - name: Run test task
+        run: make test
+      - name: Run minfy task
         run: make minify
       - name: Upload minified code as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist # Or your Rollup output directory
