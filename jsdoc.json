@@ -1,0 +1,13 @@
+{
+  "plugins": ["plugins/markdown"],
+  "source": {
+    "include": ["lib", "package.json", "README.md"],
+    "includePattern": "\\.(mjs)$"
+  },
+  "opts": {
+    "destination": "./docs/",
+    "readme": "./README.md",
+    "recurse": true,
+    "verbose": true
+  }
+}
