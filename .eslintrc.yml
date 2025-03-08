@@ -7,7 +7,7 @@ overrides:
   - files: ["test/**"]
     env:
       mocha: true
-  - files: ["lib/**", "index.mjs", "index.js"]
+  - files: ["lib/**", "index.mjs"]
     parserOptions:
       ecmaVersion: 2015
 
