@@ -6,4 +6,5 @@ interface Options {
   multibody: boolean;
   autolabel: boolean;
 }
-export default function multimd_table_plugin(md: MarkdownIt, options?: Partial<Options>): void;
+declare function multimd_table_plugin(md: MarkdownIt, options?: Partial<Options>): void;
+export = multimd_table_plugin;
