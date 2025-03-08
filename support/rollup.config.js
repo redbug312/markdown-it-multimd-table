@@ -1,9 +1,9 @@
-import nodeResolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import json from '@rollup/plugin-json';
-import nodePolyfills from 'rollup-plugin-node-polyfills';
-import pkg from '../package.json';
-import { terser } from 'rollup-plugin-terser';
+import nodeResolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
+import nodePolyfills from 'rollup-plugin-node-polyfills'
+import pkg from '../package.json'
+import { terser } from 'rollup-plugin-terser'
 
 export default {
   input: 'index.js',
@@ -33,7 +33,7 @@ export default {
       plugins: [
         terser({
           format: {
-            ascii_only: true,
+            ascii_only: true
           }
         })
       ]
@@ -45,9 +45,9 @@ export default {
     json({ namedExports: false }),
     nodePolyfills(),
     {
-      banner() {
-        return `/*! ${pkg.name} ${pkg.version} https://github.com/${pkg.repository} @license ${pkg.license} */`;
+      banner () {
+        return `/*! ${pkg.name} ${pkg.version} https://github.com/${pkg.repository} @license ${pkg.license} */`
       }
     }
   ]
-};
+}

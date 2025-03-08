@@ -1,4 +1,6 @@
-.nyc_output/
 node_modules/
 bower_components/
 coverage/
+
+.nyc_output/
+biome.json

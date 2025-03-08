@@ -10,9 +10,10 @@ ${MODULE_PATH}: package.json
 
 
 lint: ${MODULE_PATH}
-	eslint . --ignore-pattern support
+	eslint .
+	eslint . --fix
 
-test: ${MODULE_PATH} lint
+test: ${MODULE_PATH}
 	nyc mocha
 
 coverage: ${MODULE_PATH} lint
