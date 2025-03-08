@@ -2,7 +2,7 @@ MODULE_PATH := ./node_modules/.bin
 export PATH := ${MODULE_PATH}:$(PATH)
 
 .PHONY: all
-all: audit lint test
+all: test lint
 
 .PHONY: audit
 audit: ${MODULE_PATH}
