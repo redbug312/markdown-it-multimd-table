@@ -106,6 +106,7 @@ Paragraphs inside multi-line rows
 3</p>
 <p>4</p>
 </td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -131,20 +132,18 @@ text:     | 1     |\
 </thead>
 <tbody>
 <tr>
-<td>text:</td>
-<td>1</td>
-</tr>
-<tr>
-<td>- over</td>
-<td>2</td>
-</tr>
-<tr>
-<td>- several</td>
-<td></td>
-</tr>
-<tr>
-<td>- lines</td>
-<td></td>
+<td>
+<p>text:</p>
+<ul>
+<li>over</li>
+<li>several</li>
+<li>lines</li>
+</ul>
+</td>
+<td>
+<p>1
+2</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -549,8 +548,8 @@ Table with separator and empty data row
 |---|---|---|
 |
 .
-<p>|---|---|---|
-|</p>
+<table></table>
+<p>|</p>
 .
 
 
