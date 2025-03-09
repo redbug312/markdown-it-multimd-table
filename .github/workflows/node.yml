@@ -2,22 +2,46 @@ name: Node.js
 
 on:
   push:
-    branches: [ master, '**', '!wip-**' ]
   pull_request:
-    branches: [ master ]
+  release:
+    types: [published]
 
 jobs:
-  test-ci-job:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ '12', '14' ]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: make report-coveralls
-    - uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install --save-dev
+      - name: Run audit task
+        run: make audit
+      - name: Run lint task
+        run: make lint
+      - name: Run test task
+        run: make test
+      - name: Run minify task
+        run: make minify
+      - name: Upload minified code as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist # Or your Rollup output directory
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'release'
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/* # Upload files from your build output
