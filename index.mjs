@@ -8,6 +8,6 @@ export default function multimd_table_plugin (md, options) {
     multibody: true,
     autolabel: true
   }
-  const opts = md.utils.assign({}, defaults, options || {})
+  const opts = Object.assign({}, defaults, options || {})
   md.block.ruler.at('table', table.bind(null, opts), { alt: ['paragraph', 'reference'] })
 }
